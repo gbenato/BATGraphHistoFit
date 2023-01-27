@@ -138,6 +138,8 @@ int main(int argc, char **argv)
 
   // READ THE DATA
   // ----------------------------------------------------------
+
+  // hardcoded should change !!!!
   int ds=3601;
   TFile *f = new TFile(Form("/home/tdixon/Downloads/m1_eff_histo_withtimecut_PCACut_directsum_ds%i.root",ds));
 
@@ -160,15 +162,21 @@ int main(int argc, char **argv)
   // --------------------------------------------------
   // SET THE ENERGIES - should change to cfg file
 
-  
   std::vector<double> energies={1173,1333,1461,2615};
+  double dE_center=10;
+  double dE_side=30;
+  double Qbb=2527; // value to compute an observable
+  
+  // set the output path
+  //---------------------------------------------------
+  TString path = "output/";
 
-
+  
   // RUNT THE COUNTING ANALYSES
   // -------------------------------------------------
-  std::vector<TH1D*>hpass = GetHistograms(hpca,"output/out_pca_pass");
-  std::vector<TH1D*>hfail = GetHistograms(hpca_fail,"output/out_pca_fail");
-
+  std::vector<TH1D*>hpass = GetHistograms(hpca,Form("%s/out_pca_pass",path.Data()),energies,dE_center,dE_side);
+  std::vector<TH1D*>hfail = GetHistograms(hpca_fail,Form("%s/out_pca_fail",path.Data()),energies,dE_center,dE_side);
+  
 
 
 
@@ -176,7 +184,7 @@ int main(int argc, char **argv)
   // -------------------------------------------------
   TGraphErrors *gerror = new TGraphErrors(); 
   TCanvas *ce = new TCanvas();
-  ce->Print("output/eff.pdf(","pdf");
+  ce->Print(Form("%s/eff.pdf(",path.Data()),"pdf");
   for (int i=0;i<hpass.size();i++)
     {
       double mu,sigma;
@@ -184,7 +192,7 @@ int main(int argc, char **argv)
       gerror->SetPoint(i,energies[i],mu);
       gerror->SetPointError(i,0,sigma);
       hout->Draw();
-      ce->Print("output/eff.pdf","pdf");
+      ce->Print(Form("%s/eff.pdf",path.Data()),"pdf");
     }
   gerror->SetTitle(Form("PCA efficiency for ds %i ; Energy [keV] ; Efficiency ",ds));
 
@@ -202,8 +210,8 @@ int main(int argc, char **argv)
   // -----------------------------------------------
   
   BatGraphFitter *fitter = new BatGraphFitter(gerror);
-  fitter->SetPrecison(3);
-  fitter->SetQbb(2527);
+  fitter->SetPrecison(4);
+  fitter->SetQbb(Qbb);
   fitter->SetGraphMaxMin(1,0);
 
 
@@ -217,10 +225,9 @@ int main(int argc, char **argv)
   // SAVE THE OUTPUT
   // -------------------------------------------------------------
   ce->Draw();
-  ce->Print("output/eff.pdf)","pdf");
-  ce->SaveAs("test.C");
-  fitter->fModel->PrintAllMarginalized("output/eff_fit.pdf");
-  fitter->fModel->WriteMarginalizedDistributions("output_eff.root", "RECREATE");
+  ce->Print(Form("%s/eff.pdf)",path.Data()),"pdf");
+  fitter->fModel->PrintAllMarginalized(Form("%s/eff_fit.pdf",path.Data()));
+  fitter->fModel->WriteMarginalizedDistributions(Form("%/output_eff.root",path.Data()), "RECREATE");
 
 
   return 1;

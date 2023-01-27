@@ -8,7 +8,43 @@ The syntax follows closely root syntax for fitting TH1D and TGraph
 
 
 
+
+
 // to compile you can use the example Makefile changing the line of the PGRSRC
+
+To RUN the CUORE effiiencies (not worying about the BAT code just do)
+make
+./BAT_Efficiency
+
+
+This will make a series of files in the output directory
+out_pca_pass_${ENERGY}_plots.pdf - plots for the counting analysis for the peak at energy {ENERGY}
+out_pca_fail_${ENERGY}_plots.pdf - same for events failing the cut
+
+out_pca_pass.pdf/ out_pca_fail.pdf - plots of the fit reconstruction and posteriors on number of counts
+
+eff.pdf                            - plots of the posteriors on efficiency and the graph fit
+eff_fit.pdf                        - summary plots for the Graph fit
+
+*most important*
+
+output_eff.root                    - root file with all 1D and 2D posteriors for further analysis eg.
+
+
+  KEY: TH1D	h1_fit_parameter_p0;1	
+  KEY: TH2D	h2_fit_par_p1_vs_par_p0;1	
+  KEY: TH2D	h2_fit_obs_fQ_vs_par_p0;1	
+  KEY: TH1D	h1_fit_parameter_p1;1	
+  KEY: TH2D	h2_fit_obs_fQ_vs_par_p1;1	
+  KEY: TH1D	h1_fit_observable_fQ;1	
+
+
+
+
+// ** BELOW IS AN EXPLANTION OF THE BAT CODE
+// ---------------------------------------------------------------------------------------------------------
+
+
 
 
 1) Fit a graph assuming gaussian errors
@@ -23,6 +59,10 @@ Syntax is something like:
   fitter->Fit(f,"","",0,3000);
 
   ie the last Fit command has the same syntax as ROOT
+
+  sometimes you have constraints eg the data are effieciencies or resoltution, to restrict to the physical region use
+  fitter->SetGraphMaxMin(double max,double min);
+  To limit the data to be within this range (multiply by this uniform distribution)
 
 
 
