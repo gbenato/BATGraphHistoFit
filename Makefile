@@ -22,7 +22,7 @@ CXXSRCS = BAT_GraphFit.cxx BatGraphFitter.cxx
 # List of all program sources used in the program,
 # separated by spaces. A backslash indicates continuation
 # on the next line
-PRGSRCS = TestMacro.cxx
+PRGSRCS = BAT_Efficiency.cxx
 
 # compiler and flags
 CXX       = g++
