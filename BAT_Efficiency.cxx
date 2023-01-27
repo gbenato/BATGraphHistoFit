@@ -13,6 +13,15 @@
 
 std::vector<TH1D*>GetHistograms(TH1D* &h,TString title,std::vector<double>energies={1173,1333,1461,2615},double dE_center=10,double dE_side=30)
 {
+  // ** THIS IS THE METHOD THAT EXTRACTS THE posterior of the number of counts for each peak
+  // You should supply a vector of energies
+  // 1) A TH1D* of the data
+  // 2) Title is the name of a path to put summary plots
+  // 3) energies of the peaks
+  // 4) THe range for center is +/- dE_center, for left its -dE_side --> -dE_center and right is dE_center-- dE_side
+  
+
+  
   std::vector<TH1D*>out;
   TCanvas *ci= new TCanvas();
   ci->Print(Form("%s.pdf(",title.Data()),"pdf");
@@ -82,11 +91,19 @@ std::vector<TH1D*>GetHistograms(TH1D* &h,TString title,std::vector<double>energi
       
     }
   ci->Print(Form("%s.pdf)",title.Data()),"pdf");
+
+  // TOby: Should delete all objects - I was lazy to do it since the method is only called 2 times
   return out;
+
+  
 }
 
 TH1D * toy_combine(TH1D*hpass,TH1D*hfail,double &mu,double &sigma,double E,int Ntoys=1e5)
 {
+
+  // method to combine the two probability distributions of Npass and Nfail to one on efficiency
+
+  
   TH1D * hout = new TH1D("hout","hout",1200,0,1.2);
   for (int i=0;i<Ntoys;i++)
     {
@@ -117,11 +134,14 @@ int main(int argc, char **argv)
   //std::map<TString,PeakInfo> peak_map;
   TApplication *app  =new TApplication("app",&argc,argv);
 
+
+
+  // READ THE DATA
+  // ----------------------------------------------------------
   int ds=3601;
   TFile *f = new TFile(Form("/home/tdixon/Downloads/m1_eff_histo_withtimecut_PCACut_directsum_ds%i.root",ds));
 
-  
-
+ 
   TH1D *h = (TH1D*)f->Get(Form("h_ds%i",ds));
   TH1D *hb = (TH1D*)f->Get(Form("hb_ds%i",ds));
   TH1D *hm = (TH1D*)f->Get(Form("hm_ds%i",ds));
@@ -129,16 +149,31 @@ int main(int argc, char **argv)
   TH1D *hpca = (TH1D*)f->Get(Form("hpca_ds%i",ds));
   TH1D *hm_fail = (TH1D*)f->Get(Form("hmbfds%i",ds));
   TH1D *hpca_fail = (TH1D*)f->Get(Form("hpcafds%i",ds));
+
   hpca->SetLineColor(1);
   
   hpca->Rebin(1/hpca->GetBinWidth(2));
   hpca_fail->Rebin(1/hpca_fail->GetBinWidth(2));
+
+
+
+  // --------------------------------------------------
+  // SET THE ENERGIES - should change to cfg file
+
+  
   std::vector<double> energies={1173,1333,1461,2615};
 
+
+  // RUNT THE COUNTING ANALYSES
+  // -------------------------------------------------
   std::vector<TH1D*>hpass = GetHistograms(hpca,"output/out_pca_pass");
   std::vector<TH1D*>hfail = GetHistograms(hpca_fail,"output/out_pca_fail");
 
-  
+
+
+
+  // FOR EACH PEAK GET A POSTERIOR ON EFFICINECY (TOY MC) and save them to graph
+  // -------------------------------------------------
   TGraphErrors *gerror = new TGraphErrors(); 
   TCanvas *ce = new TCanvas();
   ce->Print("output/eff.pdf(","pdf");
@@ -151,31 +186,44 @@ int main(int argc, char **argv)
       hout->Draw();
       ce->Print("output/eff.pdf","pdf");
     }
-
   gerror->SetTitle(Form("PCA efficiency for ds %i ; Energy [keV] ; Efficiency ",ds));
+
+
+  // CREATE A FUNCTION TO FIT THE EFFICIENCY
+  //------------------------------------------
   TF1 *fEff = new TF1("fEff","[0]+[1]*x/4000",0,4000);
   fEff->SetParameter(0,0.8);
   fEff->SetParLimits(0,0,1.2);
   fEff->SetParameter(1,0);
   fEff->SetParLimits(1,-0.5,0.5);
+
+
+  // CREATE THE BAT fitter
+  // -----------------------------------------------
+  
   BatGraphFitter *fitter = new BatGraphFitter(gerror);
   fitter->SetPrecison(3);
   fitter->SetQbb(2527);
   fitter->SetGraphMaxMin(1,0);
 
+
+  // RUN THE GRAPH FIT - adding a confidence interval calculation
+  // -----------------------------------------------------------
+  
   fitter->Fit(fEff,"C");
 
+
+
+  // SAVE THE OUTPUT
+  // -------------------------------------------------------------
   ce->Draw();
   ce->Print("output/eff.pdf)","pdf");
-
   ce->SaveAs("test.C");
   fitter->fModel->PrintAllMarginalized("output/eff_fit.pdf");
   fitter->fModel->WriteMarginalizedDistributions("output_eff.root", "RECREATE");
 
 
-      
-  int done;
-  std::cin>>done;
+  return 1;
   
 }
       
