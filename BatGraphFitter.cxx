@@ -137,7 +137,6 @@ void BatGraphFitter::Fit(TF1 *&f,TString option,TString goption,double low,doubl
     {
       fModel= new BAT_GraphFit("fit",fTF1,1,fMode,fQbb);
       fModel->SetGraph(fGraph,fMax,fMin);
-      std::cout<<"Qbb = "<<fQbb<<std::endl;
     }
   else if(fMode=="P")
     {
@@ -178,7 +177,6 @@ void BatGraphFitter::Fit(TF1 *&f,TString option,TString goption,double low,doubl
     }
   else if(fPrec==4)
     {
-      std::cout<<"here"<<std::endl;
       fModel->SetPrecision(BCEngineMCMC::kVeryHigh);
     }
 
@@ -220,7 +218,7 @@ void BatGraphFitter::Fit(TF1 *&f,TString option,TString goption,double low,doubl
       TGraphAsymmErrors *g2=new	TGraphAsymmErrors(n);
       TGraphAsymmErrors *g3=new	TGraphAsymmErrors(n);
 
-      this->GetCredibleInterval(g1,g2,g3,n,fModel->GetMarkovChainTree(),0,1.5);
+      this->GetCredibleInterval(g1,g2,g3,n,fModel->GetMarkovChainTree(),fMin,fMax);
 
       for (int i=0;i<fModel->GetBestFitParameters().size(); i++)
 	{
@@ -286,7 +284,7 @@ void BatGraphFitter::GetCredibleInterval(TGraphAsymmErrors * &grint1,TGraphAsymm
   for (int i=0;i<T_markov->GetEntries();i++)
     {
       T_markov->GetEntry(i);
-      if (i%100000==0)
+      if (i%10000000==0)
 	{
 	  std::cout<<100*i/(double)T_markov->GetEntries()<<" %"<<std::endl;
 
@@ -320,8 +318,7 @@ void BatGraphFitter::GetCredibleInterval(TGraphAsymmErrors * &grint1,TGraphAsymm
   double p0=0.683;
   double p1=0.955;
   double p2=0.9973;
-  std::cout<<"Fill histo"<<std::endl;
-  for (int j=0;j<n;j++)
+   for (int j=0;j<n;j++)
     {
 
       double step = (h-l)/n;
@@ -384,9 +381,7 @@ void BatGraphFitter::GetCredibleInterval(TGraphAsymmErrors * &grint1,TGraphAsymm
       down_error=point_est-down_error;
 
       grint3->SetPointError(j,0,0,down_error,up_error);
-      std::cout<<" x = "<<x<<std::endl;
-      std::cout<<" y = "<<point_est<<" +/- "<<down_error<<" "<<up_error<<std::endl;
-
+   
       histos[j]->GetXaxis()->SetRangeUser(point_est-down_error,point_est+up_error);
       histos[j]->Draw();
      
