@@ -22,13 +22,13 @@ CXXSRCS = BAT_GraphFit.cxx BatGraphFitter.cxx
 # List of all program sources used in the program,
 # separated by spaces. A backslash indicates continuation
 # on the next line
-PRGSRCS = BAT_Efficiency.cxx
+PRGSRCS = CUPID_Sens.cxx
 
 # compiler and flags
 CXX       = g++
-CXXFLAGS  = -g -O2 -Wall -fPIC -Wno-deprecated 
+CXXFLAGS  = -g -O3 -Wall -fPIC -Wno-deprecated 
 LD        = /usr/bin/ld -m elf_x86_64
-LDFLAGS   = -g -O2 
+LDFLAGS   = -g -O3
 
 # ----------------------------------------------------------------------
 # The following definitions rely on the script bat-config being

@@ -52,11 +52,11 @@ output_eff.root                    - root file with all 1D and 2D posteriors for
 
 Syntax is something like:
 
-  BatGraphFitter *fitter = new BatGraphFitter(g);
+  BatGraphFitter *fitter = new BatGraphFitter(g,f);
   fitter->SetPrecison(3);
   // sets the precion with 1 =kLow, 2 = kMedium, 3=kHigh, 4 = kVeryHigh (generally 2 or 3 are good choices)
   
-  fitter->Fit(f,"","",0,3000);
+  fitter->Fit("","",0,3000);
 
   ie the last Fit command has the same syntax as ROOT
 
@@ -74,7 +74,7 @@ Syntax is something like:
 
 Constuct the fitter like
 
-   BatGraphFitter(TGraph *g,TGraph *&gTrial,TGraph *&gSuccess);
+   BatGraphFitter(TGraph *g,TGraph *&gTrial,TGraph *&gSuccess,TF1 *&f);
 
 WHere gTrial is the number of throws, gSuccess the number of catch and g the ratio (efficiency)
 
@@ -86,9 +86,9 @@ WHere gTrial is the number of throws, gSuccess the number of catch and g the rat
 -----------------------------------------------------------------------------------------------
 
 Construct with
-  BatGraphFitter *fitter = new BatGraphFitter(fHist);
+  BatGraphFitter *fitter = new BatGraphFitter(fHist,func);
   fitter->SetPrecison(3);
-  fitter->Fit(fGauss);
+  fitter->Fit();
 
 
 

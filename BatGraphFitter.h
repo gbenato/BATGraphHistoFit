@@ -16,31 +16,40 @@ class BatGraphFitter
   // 5 constructors
   // 3 for Gaussian graph fit
   // 1 for Binomial fit
-  BatGraphFitter(TGraphAsymmErrors *&g); // graph fit with errors
-  BatGraphFitter(TH1D*&h);  // histo fit
-  BatGraphFitter(TGraph*&g,double error=1); //graph fit without errors 
-  BatGraphFitter(TGraphErrors*&g); // graph fit with symmetric errors
-  BatGraphFitter(TGraph *g,TGraph *&gTrial,TGraph *&gSuccess); //binomial fit
-  BatGraphFitter(TH1D *&h,std::vector<std::pair<double,double>> ranges,std::vector<double>probs,double Sm=100); // counting analysis
+  BatGraphFitter(TGraphAsymmErrors *&g,TF1 *&f); // graph fit with errors
+  BatGraphFitter(TH1D*&h,TF1 *&f);  // histo fit
+  BatGraphFitter(TGraph*&g,TF1*&f,double error=1); //graph fit without errors 
+  BatGraphFitter(TGraphErrors*&g,TF1 *&f); // graph fit with symmetric errors
+  BatGraphFitter(TGraph *g,TGraph *&gTrial,TGraph *&gSuccess,TF1 *&f); //binomial fit
+  BatGraphFitter(TH1D *&h,TF1 *&f,std::vector<std::pair<double,double>> ranges,std::vector<double>probs,double Sm=100); // counting analysis
 
+  void SetTH1(TH1D*&h){fHisto=h;};
+  
   void SetCountingPar(std::vector<std::pair<double,double>>range, std::vector<double>prob){fCountingRange=range;fCountingProb=prob;};
-  void GetCredibleInterval(TGraphAsymmErrors * &grint1,TGraphAsymmErrors *&grint2,TGraphAsymmErrors *&grint3,int n,TTree *T_markov,double ylow,double yhigh);
+  void GetCredibleInterval(TGraphAsymmErrors * &grint1,TGraphAsymmErrors *&grint2,TGraphAsymmErrors *&grint3,int n,TTree *&T_markov,double ylow,double yhigh);
 
-  void Fit(TF1 *&f,TString option="",TString goption="",double low=0,double high=0);
+  void Fit(TString option="",TString goption="",double low=0,double high=0);
   void SetPrecison(int prec){fPrec=prec;};
   void SetGraphMaxMin(double max,double min){fMax=max; fMin=min;};
     
   int fPrec;
-  ~BatGraphFitter(){};
+  ~BatGraphFitter()
+  {
+    if (fGraph!=nullptr)delete fGraph;
+    //if (fHisto!=nullptr)delete fHisto;
+    // if (fTF1!=nullptr)delete fTF1;
+    if (fGraph!=nullptr)delete fGraph;
+    //    delete fModel;
+  };
   double fMax,fMin;
-  double fQbb=2527;
+  double fQbb;
   void SetQbb(double Q){fQbb=Q;};
-  BAT_GraphFit *fModel;
-  TGraphAsymmErrors *fGraph;
+  BAT_GraphFit *fModel=nullptr;
+  TGraphAsymmErrors *fGraph=nullptr;
   double fSmax;
-  TF1  *fTF1;
+  TF1  *fTF1=nullptr;
   TString fMode;
-  TH1D *fHisto;
+  TH1D *fHisto=nullptr;
   TGraph *fGraphBinomTrial;
   TGraph *fGraphBinomSuccess;
   double fCountingLow,fCountingHigh;

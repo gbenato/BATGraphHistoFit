@@ -28,18 +28,29 @@ class BAT_GraphFit : public BCModel
 
 public:
 
-  TF1 *fTF1;
-  TGraphAsymmErrors *fGraph;
+  TF1 *fTF1=nullptr;
+  TGraphAsymmErrors *fGraph=nullptr;
   TGraph *fGraphBinomTrial;
   TGraph *fGraphBinomSuccess;
-  TH1D *fTH1;
+  TH1D *fTH1=nullptr;
   int fNpar;
   double fFitLow,fFitHigh;
   double fGraphMinimum,fGraphMaximum;
   TString fType;
   bool fVerbose;
   // Constructor
-  BAT_GraphFit(const std::string& name,TF1 *&f,bool verbose,TString mode,double Sm=1000,double Qbb=2527);
+  void SetTF1(TF1*f)
+  {
+    fTF1=f;
+    fNpar=fTF1->GetNpar();
+    fTF1->GetRange(fFitLow,fFitHigh);
+    this->AddParameters();
+    
+  };
+
+  void AddParameters();
+  
+  BAT_GraphFit(const std::string& name,TF1 *f,bool verbose,TString mode,double Sm=1000,double Qbb=2527);
   void CalculateObservables(const std::vector<double>&pars);
 
   void SetGraph(TGraphAsymmErrors *&g,double max=pow(10,5),double min=-pow(10,5));
@@ -51,7 +62,10 @@ public:
   void Plot(TString goption="APE");
   TString fMode;
   // Destructor
-  ~BAT_GraphFit();
+  ~BAT_GraphFit()
+  {
+  };
+
   double fQbb;
   // Overload LogLikelihood to implement model
   double LogLikelihood(const std::vector<double>& pars);

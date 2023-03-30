@@ -8,7 +8,7 @@
 #include <BAT/BCParameter.h>
 #include <BAT/BCModel.h>
 
-BatGraphFitter::BatGraphFitter(TGraphAsymmErrors *&g)
+BatGraphFitter::BatGraphFitter(TGraphAsymmErrors *&g,TF1 *&f)
 {
   // constructor
 
@@ -17,32 +17,38 @@ BatGraphFitter::BatGraphFitter(TGraphAsymmErrors *&g)
 
   //gaussian likelihood
   fMode="G";
-  
+  fTF1=f;
+  fModel= new BAT_GraphFit("fit",f,1,fMode,fQbb);
   fGraph = g;
   fMin=-pow(10,9);
   fMax=pow(10,9);
 }
-BatGraphFitter::BatGraphFitter(TH1D*&h)
+BatGraphFitter::BatGraphFitter(TH1D*&h,TF1*&f)
 {
   fMode="P";
   fHisto=h;
+  fTF1=f;
+  fModel= new BAT_GraphFit("fit",f,1,fMode,fQbb);
+  
   this->SetPrecison(2);
 
 }
 
 
-BatGraphFitter::BatGraphFitter(TH1D *&h,std::vector<std::pair<double,double>>ranges,std::vector<double>probs,double Sm)
+BatGraphFitter::BatGraphFitter(TH1D *&h,TF1*&f,std::vector<std::pair<double,double>>ranges,std::vector<double>probs,double Sm)
 {
   fMode="C";
   fHisto=h;
-
+  fTF1=f;
+  fModel= new BAT_GraphFit("fit",f,1,fMode);
+	
   fSmax=Sm;
   this->SetCountingPar(ranges,probs);
   this->SetPrecison(2);
 
 }
 
-BatGraphFitter::BatGraphFitter(TGraph *&g,double error)
+BatGraphFitter::BatGraphFitter(TGraph *&g,TF1*&f,double error)
 {
   //constructor for graph
 
@@ -59,12 +65,15 @@ BatGraphFitter::BatGraphFitter(TGraph *&g,double error)
 
   fMin=-pow(10,9);
   fMax=pow(10,9);
+  fTF1=f;
+  fModel= new BAT_GraphFit("fit",f,1,fMode,fQbb);
 
+  
   this->SetPrecison(2);
 }
 
 
-BatGraphFitter::BatGraphFitter(TGraph *g,TGraph *&gTrial,TGraph *&gSuccess)
+BatGraphFitter::BatGraphFitter(TGraph *g,TGraph *&gTrial,TGraph *&gSuccess,TF1 *&f)
 {
 
   fGraphBinomTrial = gTrial;
@@ -79,12 +88,17 @@ BatGraphFitter::BatGraphFitter(TGraph *g,TGraph *&gTrial,TGraph *&gSuccess)
       fGraph->SetPointEYhigh(i,1);
       fGraph->SetPointEYlow(i,1);
     }
-  this->SetPrecison(2);
-
   fMode="B";
+
+  fModel= new BAT_GraphFit("fit",f,1,fMode,fQbb);
+
+  this->SetPrecison(2);
+  fTF1=f;
 }
 
-BatGraphFitter::BatGraphFitter(TGraphErrors *&g)
+
+
+BatGraphFitter::BatGraphFitter(TGraphErrors *&g,TF1 *&f)
 {
   // constructor for graph
   
@@ -98,22 +112,31 @@ BatGraphFitter::BatGraphFitter(TGraphErrors *&g)
       fGraph->SetPointEYhigh(i,g->GetEY()[i]);
       fGraph->SetPointEYlow(i,g->GetEY()[i]);
     }
+  fModel= new BAT_GraphFit("fit",f,1,fMode,fQbb);
+    
   this->SetPrecison(2);
 
 }
 
-void BatGraphFitter::Fit(TF1 *&f,TString option,TString goption,double low,double high)
+
+
+
+
+
+
+void BatGraphFitter::Fit(TString option,TString goption,double low,double high)
 {
 
   auto start = std::chrono::high_resolution_clock::now();
 
 
+  std::cout<<"Mode is "<<fMode<<std::endl;
   bool CI=0;
   // parse the option - currently the only one to be implemented is R
   TString type;
   if (option.Contains("R")==1)
     {
-      f->SetRange(low,high);
+      fTF1->SetRange(low,high);
     }
   
   if (option.Contains("I")==1)
@@ -129,43 +152,42 @@ void BatGraphFitter::Fit(TF1 *&f,TString option,TString goption,double low,doubl
       // compute the confidence interval
       CI = 1;
     }
-  fTF1=f;
+
+
+
+  
 
   // add some code to delete the old model (or reset it)
 
   if (fMode=="G")
     {
-      fModel= new BAT_GraphFit("fit",fTF1,1,fMode,fQbb);
+
       fModel->SetGraph(fGraph,fMax,fMin);
     }
   else if(fMode=="P")
     {
-      fModel= new BAT_GraphFit("fit",fTF1,1,fMode);
       fHisto->GetXaxis()->SetRangeUser(low-10,high+10);
       fModel->SetHisto(fHisto,type);
     }
   else if (fMode=="B")
     {
-      fModel= new BAT_GraphFit("fit",fTF1,1,fMode);
+
       fModel->SetGraph(fGraph);
       fModel->SetBinomGraph(fGraphBinomTrial,fGraphBinomSuccess);
     }
   else if (fMode=="C")
     {
-      fModel = new BAT_GraphFit("fit",fTF1,1,fMode,fSmax);
       fHisto->GetXaxis()->SetRangeUser(fCountingRange[0].first-10,fCountingRange[2].second+10);
       fModel->SetHisto(fHisto,type);
-      
       fModel->SetCountingPars( fCountingRange,fCountingProb);
 
-      // some command here
-      //fModel->SetCountingBoundaries(fCountingLow,fCountingHigh,fProbability);
     }
-  fModel->WriteMarkovChain("output_mcmc.root", "RECREATE");
+  
 
   if (fPrec==1)
     {
       fModel->SetPrecision(BCEngineMCMC::kLow);
+      fModel->SetNChains(2);
     }
   else if (fPrec==2)
     {
@@ -180,35 +202,38 @@ void BatGraphFitter::Fit(TF1 *&f,TString option,TString goption,double low,doubl
       fModel->SetPrecision(BCEngineMCMC::kVeryHigh);
     }
 
-
+  
   fModel->MarginalizeAll(BCIntegrate::kMargMetropolis);
 
 
 
   fModel->FindMode(fModel->GetBestFitParameters());
+
+
   std::cout<<"                      "<<std::endl;
   std::cout<<"Fit with BAT best fit value"<<std::endl;
   std::cout<<"****************************************"<<std::endl;
+
   for (int i=0;i<fModel->GetBestFitParameters().size(); i++)
     {
       BCParameter  parameter = fModel->GetParameter(i);
       fTF1->SetParameter(i,fModel->GetBestFitParameters()[i]);
-      fTF1->SetParError(i,fModel->GetMarginalized(parameter.GetName().data()).GetHistogram()->GetRMS());
+      // TH1D *marg =(TH1D*)fModel->GetMarginalized(parameter.GetName().data()).GetHistogram()->Clone();
+      // fTF1->SetParError(i,marg->GetRMS());
       std::cout<<"parameter "<<parameter.GetName().data()<<
-	" "<<fModel->GetBestFitParameters()[i]<<"           +/- "<<
-	fModel->GetMarginalized(parameter.GetName().data()).GetHistogram()->GetRMS()<<std::endl;
-    }      std::cout<<" "<<std::endl;
+	" "<<fModel->GetBestFitParameters()[i]<<std::endl;
       
-      // todo replace with a better error estimate
-    
-
-  //  fModel->WriteMarkovChain("output_mcmc.root", "RECREATE");                                                                                                                                     
-
+    }      std::cout<<" "<<std::endl;
+  
+      
 
   auto stop = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
   std::cout<<"Fit took : "<<duration.count()<<" ms"<<std::endl;
   std::cout<<" "<<std::endl;
+
+  
+  // GET THE CREDIBLE INTERVAL
   if (CI)
     {
       start = std::chrono::high_resolution_clock::now();
@@ -217,8 +242,8 @@ void BatGraphFitter::Fit(TF1 *&f,TString option,TString goption,double low,doubl
       TGraphAsymmErrors *g1=new TGraphAsymmErrors(n);
       TGraphAsymmErrors *g2=new	TGraphAsymmErrors(n);
       TGraphAsymmErrors *g3=new	TGraphAsymmErrors(n);
-
-      this->GetCredibleInterval(g1,g2,g3,n,fModel->GetMarkovChainTree(),fMin,fMax);
+      TTree *T=(TTree*)fModel->GetMarkovChainTree();
+      this->GetCredibleInterval(g1,g2,g3,n,T,fMin,fMax);
 
       for (int i=0;i<fModel->GetBestFitParameters().size(); i++)
 	{
@@ -230,7 +255,7 @@ void BatGraphFitter::Fit(TF1 *&f,TString option,TString goption,double low,doubl
       duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
       std::cout<<"Computing credible band took : "<<duration.count()<<" ms"<<std::endl;
       std::cout<<" "<<std::endl;
-
+      delete T;
       fModel->PlotCI(g1,g2,g3);
 
     }
@@ -239,12 +264,14 @@ void BatGraphFitter::Fit(TF1 *&f,TString option,TString goption,double low,doubl
       fModel->Plot(goption);
     }
 
+  
+
 
 }
 
 
 
-void BatGraphFitter::GetCredibleInterval(TGraphAsymmErrors * &grint1,TGraphAsymmErrors *&grint2,TGraphAsymmErrors *&grint3,int n,TTree *T_markov,double ylow,double yhigh)
+void BatGraphFitter::GetCredibleInterval(TGraphAsymmErrors * &grint1,TGraphAsymmErrors *&grint2,TGraphAsymmErrors *&grint3,int n,TTree *&T_markov,double ylow,double yhigh)
 {
   // method to get a Bayesian credible interval
   // we need to
@@ -281,7 +308,7 @@ void BatGraphFitter::GetCredibleInterval(TGraphAsymmErrors * &grint1,TGraphAsymm
   std::vector<TH1D*> histos;
   for (int i=0;i<n;i++)histos.push_back(new TH1D(Form("h%i",i),Form("%i",i),10000,ylow,yhigh));
 
-  for (int i=0;i<T_markov->GetEntries();i++)
+  for (long int i=0;i<T_markov->GetEntries();i++)
     {
       T_markov->GetEntry(i);
       if (i%10000000==0)

@@ -171,7 +171,7 @@ void BAT_GraphFit::SetCountingPars(  std::vector<std::pair<double,double>>range,
 	}
 
       fCountingN.at(i)=fTH1->Integral(bin1,bin2-1);
-      std::cout<<" N for bin i is "<<fCountingN.at(i)<<std::endl;
+      
     }
 
   fFitLow=fCountingRange[0].first;
@@ -207,23 +207,25 @@ void BAT_GraphFit::SetBinomGraph(TGraph *&gTrial,TGraph *&gSuccess)
 
 }
 // ---------------------------------------------------------
-BAT_GraphFit::BAT_GraphFit(const std::string& name,TF1 *&f,bool verbose,TString mode,double Sm,double Qbb)
+BAT_GraphFit::BAT_GraphFit(const std::string& name,TF1 *f,bool verbose,TString mode,double Sm,double Qbb)
     : BCModel(name)
 {
+
+
   
   // get the information on the parameters from the TF1
-
+  
   fCountingSmax=Sm;
-  fTF1 = f;
-  //fGraph =g;
-  fNpar=fTF1->GetNpar();
   fVerbose=verbose;
   fMode=mode;
   // Default range from the TF1
   fQbb=Qbb;
-  fTF1->GetRange(fFitLow,fFitHigh);
+  this->SetTF1(f);
+}
 
-
+void BAT_GraphFit::AddParameters()
+{
+  
   // for the counting instead the fit range comes from fCountingRanges
 
   if (fMode!="C")
@@ -261,18 +263,13 @@ BAT_GraphFit::BAT_GraphFit(const std::string& name,TF1 *&f,bool verbose,TString 
 
   // how to set priors
   GetParameters().SetPriorConstantAll();
-  GetParameters().SetNBins(300);
+  GetParameters().SetNBins(100);
   
 }
 
 
 
 
-// ---------------------------------------------------------
-BAT_GraphFit::~BAT_GraphFit()
-{
-    // destructor
-}
 
 
 void BAT_GraphFit::CalculateObservables(const std::vector<double>&pars)
@@ -391,7 +388,7 @@ double BAT_GraphFit::LogLikelihood(const std::vector<double>& pars)
 	  else
 	    {
 	      // penalty for negative model
-	      logL+=pow(10,8);
+	      logL-=pow(10,8);
 	    }
 
 
