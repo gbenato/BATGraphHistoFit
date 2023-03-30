@@ -1,5 +1,5 @@
 
-#include "BatGraphFitter.h"
+#include "src/BatGraphFitter.h"
 #include "TFile.h"
 #include <BAT/BCLog.h>
 #include "TRandom3.h"
@@ -46,7 +46,7 @@ int main(int argc,char**argv)
   f->SetParameter(2,0.01);
   f->SetParLimits(2,-.1,0.3);
  
-  BatGraphFitter *fitter = new BatGraphFitter(g);
+  BatGraphFitter *fitter = new BatGraphFitter(g,f);
   fitter->SetPrecison(3);
   fitter->SetGraphMaxMin(1,0);
 
@@ -65,7 +65,7 @@ int main(int argc,char**argv)
   std::cout<<"NOW FIT with bat"<<std::endl;
   std::cout<<"***********************************"<<std::endl;
   
-  fitter->Fit(f);
+  fitter->Fit();
   
   c->Draw();
   c->Print("fit.pdf(","pdf");
@@ -100,11 +100,11 @@ int main(int argc,char**argv)
   fGauss->SetParameter(3,5);
   fGauss->SetParLimits(3,0,10);
   
-  BatGraphFitter *fitter2 = new BatGraphFitter(fHist);
+  BatGraphFitter *fitter2 = new BatGraphFitter(fHist,fGauss);
   fitter2->SetPrecison(3);
   TCanvas *c2= new TCanvas("c2","c2");
   c2->cd();
-  fitter2->Fit(fGauss);
+  fitter2->Fit();
   c2->Draw();
   c2->Print("fit.pdf","pdf");
   fitter2->fModel->PrintAllMarginalized("out_hist_plots.pdf");
@@ -121,16 +121,16 @@ int main(int argc,char**argv)
   range.push_back(std::make_pair(2580,2600));
   range.push_back(std::make_pair(2605,2625));
   range.push_back(std::make_pair(2630,2650));
+  TF1 *fInt=new TF1("fInt","[0]*x",2500,2700);
 
   std::vector<double>probs{0,1,0};
-  BatGraphFitter *fitter_count = new BatGraphFitter(fHist,range,probs,400);
+  BatGraphFitter *fitter_count = new BatGraphFitter(fHist,fInt,range,probs,400);
 
   fitter_count->SetPrecison(3);
-  TF1 *fInt=new TF1("fInt","[0]*x",2500,2700);
   fInt->SetParLimits(0,0,20);
   TCanvas *c3=new TCanvas("c3","c3");
   c3->cd();
-  fitter_count->Fit(fInt);
+  fitter_count->Fit();
 
   c3->Draw();
   c3->Print("fit.pdf)","pdf");

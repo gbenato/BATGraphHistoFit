@@ -17,12 +17,12 @@
 # List of all class (model) sources used in the program,
 # separated by spaces. A backslash indicates continuation
 # on the next line
-CXXSRCS = BAT_GraphFit.cxx BatGraphFitter.cxx
+CXXSRCS = 'src/BAT_GraphFit.cxx' 'src/BatGraphFitter.cxx'
 
 # List of all program sources used in the program,
 # separated by spaces. A backslash indicates continuation
 # on the next line
-PRGSRCS = CUPID_Sens.cxx
+PRGSRCS = macros/CUPID_Sens.cxx
 
 # compiler and flags
 CXX       = g++
@@ -60,10 +60,10 @@ link.d : $(addsuffix .h,$(basename $(CXXSRCS))) $(CXXSRCS) $(PRGSRCS)
 -include link.d
 
 $(CXXOBJS) $(PRGOBJS) :
-	$(CXX) $(CXXFLAGS) -c $(filter $(basename $@).%,$(filter-out %.h,$^)) -o $@
+	$(CXX) $(CXXFLAGS) -c $(filter $(basename $@).%,$(filter-out %.h,$^)) -o bin/$@
 
 $(MYPROGS) : $(CXXOBJS)
-	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
+	$(CXX) $(LDFLAGS) $^ $(LIBS) -o bin/$@
 
 clean :
 	rm -f $(GARBAGE)

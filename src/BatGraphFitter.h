@@ -1,7 +1,7 @@
 
 #include "TGraphAsymmErrors.h"
 #include "TF1.h"
-#include "BAT_GraphFit.h"
+#include "src/BAT_GraphFit.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TGraphErrors.h"

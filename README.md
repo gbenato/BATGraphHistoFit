@@ -10,11 +10,20 @@ The syntax follows closely root syntax for fitting TH1D and TGraph
 
 
 
-// to compile you can use the example Makefile changing the line of the PGRSRC
+To compile you can use:
+g++ -std=c++0x `root-config  --cflags --glibs` macros/TestMacro.cxx src/BatGraphFitter.cxx src/BAT_GraphFit.cxx -o bin/TestMacro `bat-config --libs --cflags`
 
-To RUN the CUORE effiiencies (not worying about the BAT code just do)
-make
-./BAT_Efficiency
+Or change the name of TestMacro.cxx to your macro.
+
+
+To RUN the test do:
+./bin/TestMacro
+
+
+For the CUORE efficiencies compile and do:
+./bin/CUORE_Efficiency
+
+
 
 
 This will make a series of files in the output directory
@@ -43,7 +52,6 @@ output_eff.root                    - root file with all 1D and 2D posteriors for
 
 // ** BELOW IS AN EXPLANTION OF THE BAT CODE
 // ---------------------------------------------------------------------------------------------------------
-
 
 
 

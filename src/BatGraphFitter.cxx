@@ -1,5 +1,5 @@
-#include "BatGraphFitter.h"
-#include "BAT_GraphFit.h"
+#include "src/BatGraphFitter.h"
+#include "src/BAT_GraphFit.h"
 #include "TFile.h"
 
 #include "TCanvas.h"
