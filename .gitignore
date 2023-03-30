@@ -3,3 +3,5 @@
 *.pdf
 *.d
 *.root
+output/*
+plots/*
