@@ -8,14 +8,17 @@
 #include <BAT/BCParameter.h>
 #include <BAT/BCModel.h>
 
+
+void BatGraphFitter::ResetTF1(TF1*&f)
+{
+  fModel->SetTF1(f,0);
+}
 BatGraphFitter::BatGraphFitter(TGraphAsymmErrors *&g,TF1 *&f)
 {
   // constructor
-
-  
   // in the constructor we need to create the
-
   //gaussian likelihood
+
   fMode="G";
   fTF1=f;
   fModel= new BAT_GraphFit("fit",f,1,fMode,fQbb);
@@ -112,6 +115,7 @@ BatGraphFitter::BatGraphFitter(TGraphErrors *&g,TF1 *&f)
       fGraph->SetPointEYhigh(i,g->GetEY()[i]);
       fGraph->SetPointEYlow(i,g->GetEY()[i]);
     }
+  fTF1=f;
   fModel= new BAT_GraphFit("fit",f,1,fMode,fQbb);
     
   this->SetPrecison(2);
@@ -124,13 +128,14 @@ BatGraphFitter::BatGraphFitter(TGraphErrors *&g,TF1 *&f)
 
 
 
-void BatGraphFitter::Fit(TString option,TString goption,double low,double high)
+void BatGraphFitter::Fit(TString option,TString goption,double low,double high,bool marg,bool quiet)
 {
 
   auto start = std::chrono::high_resolution_clock::now();
 
 
-  std::cout<<"Mode is "<<fMode<<std::endl;
+  if (!quiet)
+    std::cout<<"Mode is "<<fMode<<std::endl;
   bool CI=0;
   // parse the option - currently the only one to be implemented is R
   TString type;
@@ -154,7 +159,7 @@ void BatGraphFitter::Fit(TString option,TString goption,double low,double high)
     }
 
 
-
+  BCLog::SetLogLevelScreen(BCLog::error);
   
 
   // add some code to delete the old model (or reset it)
@@ -202,29 +207,30 @@ void BatGraphFitter::Fit(TString option,TString goption,double low,double high)
       fModel->SetPrecision(BCEngineMCMC::kVeryHigh);
     }
 
-  
-  fModel->MarginalizeAll(BCIntegrate::kMargMetropolis);
+  if (marg==1)
+    
+    fModel->MarginalizeAll(BCIntegrate::kMargMetropolis);
 
 
 
   fModel->FindMode(fModel->GetBestFitParameters());
 
 
-  std::cout<<"                      "<<std::endl;
-  std::cout<<"Fit with BAT best fit value"<<std::endl;
-  std::cout<<"****************************************"<<std::endl;
-
-  for (int i=0;i<fModel->GetBestFitParameters().size(); i++)
+  if (!quiet)
     {
-      BCParameter  parameter = fModel->GetParameter(i);
-      fTF1->SetParameter(i,fModel->GetBestFitParameters()[i]);
-      // TH1D *marg =(TH1D*)fModel->GetMarginalized(parameter.GetName().data()).GetHistogram()->Clone();
-      // fTF1->SetParError(i,marg->GetRMS());
-      std::cout<<"parameter "<<parameter.GetName().data()<<
-	" "<<fModel->GetBestFitParameters()[i]<<std::endl;
+      std::cout<<"                      "<<std::endl;
+      std::cout<<"Fit with BAT best fit value"<<std::endl;
+      std::cout<<"****************************************"<<std::endl;
       
-    }      std::cout<<" "<<std::endl;
-  
+      for (int i=0;i<fModel->GetBestFitParameters().size(); i++)
+	{
+	  BCParameter  parameter = fModel->GetParameter(i);
+	  fTF1->SetParameter(i,fModel->GetBestFitParameters()[i]);
+	  std::cout<<"parameter "<<parameter.GetName().data()<<
+	    " "<<fModel->GetBestFitParameters()[i]<<std::endl;
+	  
+	}      std::cout<<" "<<std::endl;
+    
       
 
   auto stop = std::chrono::high_resolution_clock::now();
@@ -232,17 +238,18 @@ void BatGraphFitter::Fit(TString option,TString goption,double low,double high)
   std::cout<<"Fit took : "<<duration.count()<<" ms"<<std::endl;
   std::cout<<" "<<std::endl;
 
-  
+    }
   // GET THE CREDIBLE INTERVAL
   if (CI)
     {
-      start = std::chrono::high_resolution_clock::now();
+      auto start = std::chrono::high_resolution_clock::now();
 
       int n=500;
       TGraphAsymmErrors *g1=new TGraphAsymmErrors(n);
       TGraphAsymmErrors *g2=new	TGraphAsymmErrors(n);
       TGraphAsymmErrors *g3=new	TGraphAsymmErrors(n);
       TTree *T=(TTree*)fModel->GetMarkovChainTree();
+      T->Print();
       this->GetCredibleInterval(g1,g2,g3,n,T,fMin,fMax);
 
       for (int i=0;i<fModel->GetBestFitParameters().size(); i++)
@@ -251,8 +258,8 @@ void BatGraphFitter::Fit(TString option,TString goption,double low,double high)
 	  fTF1->SetParameter(i,fModel->GetBestFitParameters()[i]);
 	  fTF1->SetParError(i,fModel->GetMarginalized(parameter.GetName().data()).GetHistogram()->GetRMS());
 	}
-      stop =std::chrono::high_resolution_clock::now();
-      duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+      auto stop =std::chrono::high_resolution_clock::now();
+      auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
       std::cout<<"Computing credible band took : "<<duration.count()<<" ms"<<std::endl;
       std::cout<<" "<<std::endl;
       delete T;
@@ -395,20 +402,19 @@ void BatGraphFitter::GetCredibleInterval(TGraphAsymmErrors * &grint1,TGraphAsymm
       grint2->SetPointError(j,0,0,down_error,up_error);
 
 
-      // 3 sigma
+      // ******3 sigma***********
+      //***************************
 
       q=0.5+p2/2;
-
       histos[j]->GetQuantiles(1,&up_error,&q);
       up_error-=point_est;
-
       q=0.5-p2/2;
       histos[j]->GetQuantiles(1,&down_error,&q);
-
       down_error=point_est-down_error;
-
       grint3->SetPointError(j,0,0,down_error,up_error);
-   
+
+
+      
       histos[j]->GetXaxis()->SetRangeUser(point_est-down_error,point_est+up_error);
       histos[j]->Draw();
      

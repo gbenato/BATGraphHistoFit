@@ -28,10 +28,11 @@ class BatGraphFitter
   void SetCountingPar(std::vector<std::pair<double,double>>range, std::vector<double>prob){fCountingRange=range;fCountingProb=prob;};
   void GetCredibleInterval(TGraphAsymmErrors * &grint1,TGraphAsymmErrors *&grint2,TGraphAsymmErrors *&grint3,int n,TTree *&T_markov,double ylow,double yhigh);
 
-  void Fit(TString option="",TString goption="",double low=0,double high=0);
+  void Fit(TString option="",TString goption="",double low=0,double high=0,bool marg=1,bool quiet=0);
   void SetPrecison(int prec){fPrec=prec;};
   void SetGraphMaxMin(double max,double min){fMax=max; fMin=min;};
-    
+  void ResetTF1(TF1*&f);
+
   int fPrec;
   ~BatGraphFitter()
   {

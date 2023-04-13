@@ -39,12 +39,14 @@ public:
   TString fType;
   bool fVerbose;
   // Constructor
-  void SetTF1(TF1*f)
+  void SetTF1(TF1*&f,bool addpars=1)
   {
+
     fTF1=f;
     fNpar=fTF1->GetNpar();
     fTF1->GetRange(fFitLow,fFitHigh);
-    this->AddParameters();
+    if (addpars)
+      this->AddParameters();
     
   };
 

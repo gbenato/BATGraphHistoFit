@@ -263,7 +263,7 @@ void BAT_GraphFit::AddParameters()
 
   // how to set priors
   GetParameters().SetPriorConstantAll();
-  GetParameters().SetNBins(100);
+  GetParameters().SetNBins(300);
   
 }
 
