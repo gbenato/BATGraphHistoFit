@@ -118,7 +118,7 @@ int main(int argc, char **argv)
   TApplication *app  =new TApplication("app",&argc,argv);
   gROOT->SetBatch(1);
 
-  TString reso_type="sqrt(pol1)";
+  TString reso_type="sqrt_pol1";
 
   TString function_bias="[0]+[1]*x+[2]*x*x";
   TString function_reso="[0]+[1]*x+[2]*x*x";
@@ -128,12 +128,12 @@ int main(int argc, char **argv)
       function_reso="[0]+[1]*x";
       NparReso=2;
     }
-  else if (reso_type=="sqrt(pol1)")
+  else if (reso_type=="sqrt_pol1")
     {
       function_reso="sqrt([0]*[0]+[1]*x)";
       NparReso=2;
     }
-  else if (reso_type=="sqrt(pol2)")
+  else if (reso_type=="sqrt_pol2")
     {
       function_reso="sqrt([0]*[0]+[1]*x+[2]*x*x)";
     }
@@ -228,12 +228,12 @@ int main(int argc, char **argv)
 
   // save
   ce->Draw();
-  ce->Print(Form("%s/reso.pdf(",path.Data()),"pdf");
+  ce->Print(Form("%s/reso_%s.pdf(",path.Data(),reso_type.Data()),"pdf");
   margdistro_reso->Draw();
   ce->Draw();
-  ce->Print(Form("%s/reso.pdf)",path.Data()),"pdf");
-  fitter_reso->fModel->PrintAllMarginalized(Form("%s/reso_fit.pdf",path.Data()));
-  fitter_reso->fModel->WriteMarginalizedDistributions(Form("%s/output_reso.root",path.Data()), "RECREATE");
+  ce->Print(Form("%s/reso_%s.pdf)",path.Data(),reso_type.Data()),"pdf");
+  fitter_reso->fModel->PrintAllMarginalized(Form("%s/reso_fit_%s.pdf",path.Data(),reso_type.Data()));
+  fitter_reso->fModel->WriteMarginalizedDistributions(Form("%s/output_reso_%s.root",path.Data(),reso_type.Data()), "RECREATE");
 
   
 
