@@ -368,6 +368,7 @@ int FreqLimit()
 
   // Parameters
   int Nsignals=100;
+  
   int Ntoys=200000;
 
   TGraph *gsens=new TGraph();
@@ -1065,6 +1066,7 @@ int BayesianLimits(TString mode,int Ntoys)
 	      hprob_B->Fill(100*evidence_B/(evidence_SB+evidence_B));
 	    }
 	}
+
 
       fitter2->fModel->ResetResults();
       fitterbkg->fModel->ResetResults();

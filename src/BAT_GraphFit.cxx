@@ -1,3 +1,4 @@
+
 // ***************************************************************
 // This file was created using the bat-project script.
 // bat-project is part of Bayesian Analysis Toolkit (BAT).
@@ -124,7 +125,7 @@ void BAT_GraphFit::SetGraph(TGraphAsymmErrors *&g,double max,double min)
   fGraphMaximum=max;
   fGraphMinimum=min;
   fGraph=g;
-  AddObservable("fQ",0,1.5,"f(Q_{#beta#beta})","[]");
+  AddObservable("fQ",fMinObs,fMaxObs,"f(Q_{#beta#beta})","[]");
 
   GetObservables().SetNBins(1000);
   

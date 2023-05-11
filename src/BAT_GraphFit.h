@@ -38,6 +38,9 @@ public:
   double fGraphMinimum,fGraphMaximum;
   TString fType;
   bool fVerbose;
+  double fMinObs=0;
+  double fMaxObs=1.5;
+  
   // Constructor
   void SetTF1(TF1*&f,bool addpars=1)
   {
@@ -54,7 +57,7 @@ public:
   
   BAT_GraphFit(const std::string& name,TF1 *f,bool verbose,TString mode,double Sm=1000,double Qbb=2527);
   void CalculateObservables(const std::vector<double>&pars);
-
+  void SetObsRange(double mi,double ma){fMinObs=mi; fMaxObs=ma;};
   void SetGraph(TGraphAsymmErrors *&g,double max=pow(10,5),double min=-pow(10,5));
   void SetHisto(TH1D*&h,TString type="P");
   void SetBinomGraph(TGraph *&gTrial,TGraph *&gSuccess);

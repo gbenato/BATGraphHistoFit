@@ -1,14 +1,16 @@
 #include "TString.h"
-
 #include "TFile.h"
 #include "TH1D.h"
-#include "BatGraphFitter.h"
+#include "src/BatGraphFitter.h"
 #include "TFile.h"
 #include <BAT/BCLog.h>
 #include "TRandom3.h"
 #include "TF1.h"
 #include "TApplication.h"
 
+
+// MACRO TO CALCULATE THE EFFICIENCY USING THE PEAKS IMPLEMENTED IN BAT
+// Toby Dixon: toby.dixon@universite-paris-saclay.fr 11/5/2023
 
 
 std::vector<TH1D*>GetHistograms(TH1D* &h,TString title,std::vector<double>energies={1173,1333,1461,2615},double dE_center=10,double dE_side=30)
@@ -58,22 +60,23 @@ std::vector<TH1D*>GetHistograms(TH1D* &h,TString title,std::vector<double>energi
       double Smax = max-B;
       double Sest = Smax*(sqrt(2*TMath::Pi()*5))/binwidth;
 
-      // MAKE THE FITTER
-      // ------------------------------------------------------
-      BatGraphFitter *fitter_count_pass = new BatGraphFitter(h,range,probs,3*Sest);
-      fitter_count_pass->SetPrecison(3);
 
-      // MAKE FIT FUNCTIOn
-      //-------------------------------------------------------
+      // MAKE FIT FUNCTIOn                                                                                                                                                                                
+      //-------------------------------------------------------                                                                                                                                            
       TF1 *fInt=new TF1("fInt",Form("[0]*x+[1]*pow(x-%f,2)/2.",E),E-dE_side-5,E+dE_side+5);
       fInt->SetParLimits(0,0,3*B);
       fInt->SetParameter(1,0);
       fInt->SetParLimits(1,-B*0.5/30.,+B*0.5/30.);
 
+      // MAKE THE FITTER
+      // ------------------------------------------------------
+      BatGraphFitter *fitter_count_pass = new BatGraphFitter(h,fInt,range,probs,3*Sest);
+      fitter_count_pass->SetPrecison(3);
+      
 
       // RUN THE FIT AND DRAW
       //-------------------------------------------------------
-      fitter_count_pass->Fit(fInt);
+      fitter_count_pass->Fit();
       ci->Draw();
       ci->Print(Form("%s.pdf",title.Data()),"pdf");
       
@@ -86,7 +89,7 @@ std::vector<TH1D*>GetHistograms(TH1D* &h,TString title,std::vector<double>energi
       
       ci->Draw();
       ci->Print(Form("%s.pdf",title.Data()),"pdf");
-      fitter_count_pass->fModel->PrintAllMarginalized(Form("%s_%i_plots.pdf",title.Data(),(int)E));
+      //fitter_count_pass->fModel->PrintAllMarginalized(Form("%s_%i_plots.pdf",title.Data(),(int)E));
       out.push_back(margdistro);
       
     }
@@ -97,6 +100,7 @@ std::vector<TH1D*>GetHistograms(TH1D* &h,TString title,std::vector<double>energi
 
   
 }
+
 
 TH1D * toy_combine(TH1D*hpass,TH1D*hfail,double &mu,double &sigma,double E,int Ntoys=1e5)
 {
@@ -123,7 +127,51 @@ TH1D * toy_combine(TH1D*hpass,TH1D*hfail,double &mu,double &sigma,double E,int N
 
   return hout;
 }
-      
+
+
+void GetCI(TH1D *&h)
+{
+
+  double pe=h->GetBinCenter(h->GetMaximumBin());
+
+  std::cout<<"point estimate = "<<pe<<std::endl;
+  double q;
+  double x=pe;
+
+  
+  q=h->Integral(0,h->FindBin(pe))/h->Integral();
+  std::cout<<q<<std::endl;
+  double qdown=q-0.683/2.;
+  double qup=q+0.683/2.;
+  if (qdown<0)
+    {
+      q=0.9;
+      h->GetQuantiles(1,&x,&q);
+      std::cout<<"no measurment can only set limit  < "<<x<<std::endl;
+    }
+  else if (qup>1)
+    {
+      q=0.1;
+      h->GetQuantiles(1,&x,&q);
+      std::cout<<"no measurment can only set limit  > "<<x<<std::endl;
+    }
+  else
+    {
+  
+      double low,high;
+      h->GetQuantiles(1,&low,&qdown);
+      h->GetQuantiles(1,&high,&qup);
+
+      double e_low = pe-low;
+      double e_high=high-pe;
+
+      std::cout<<" Measurment: "<<pe<<" +/- "<<e_high<<" / "<<e_low<<std::endl;
+    }
+}
+
+
+
+
   
 int main(int argc, char **argv)
 {
@@ -133,15 +181,15 @@ int main(int argc, char **argv)
   // please replace with a cfg file
   //std::map<TString,PeakInfo> peak_map;
   TApplication *app  =new TApplication("app",&argc,argv);
-
+  gROOT->SetBatch(1);
 
 
   // READ THE DATA
   // ----------------------------------------------------------
 
   // hardcoded should change !!!!
-  int ds=3601;
-  TFile *f = new TFile(Form("/home/tdixon/Downloads/m1_eff_histo_withtimecut_PCACut_directsum_ds%i.root",ds));
+  int ds=atoi(argv[1]);
+  TFile *f = new TFile(Form("/home/tdixon/BATGraphHistoFit/inputs/m1_eff_histo_withtimecut_PCACut_directsum_ds%i.root",ds));
 
  
   TH1D *h = (TH1D*)f->Get(Form("h_ds%i",ds));
@@ -162,14 +210,14 @@ int main(int argc, char **argv)
   // --------------------------------------------------
   // SET THE ENERGIES - should change to cfg file
 
-  std::vector<double> energies={1173,1333,1461,2615};
+  std::vector<double> energies={835,1173,1333,1461,2615};
   double dE_center=10;
   double dE_side=30;
   double Qbb=2527; // value to compute an observable
   
   // set the output path
   //---------------------------------------------------
-  TString path = "output/";
+  TString path = Form("output/CUORE_eff/ds%i/",ds);
 
   
   // RUNT THE COUNTING ANALYSES
@@ -183,8 +231,10 @@ int main(int argc, char **argv)
   // FOR EACH PEAK GET A POSTERIOR ON EFFICINECY (TOY MC) and save them to graph
   // -------------------------------------------------
   TGraphErrors *gerror = new TGraphErrors(); 
+
   TCanvas *ce = new TCanvas();
   ce->Print(Form("%s/eff.pdf(",path.Data()),"pdf");
+
   for (int i=0;i<hpass.size();i++)
     {
       double mu,sigma;
@@ -194,6 +244,7 @@ int main(int argc, char **argv)
       hout->Draw();
       ce->Print(Form("%s/eff.pdf",path.Data()),"pdf");
     }
+
   gerror->SetTitle(Form("PCA efficiency for ds %i ; Energy [keV] ; Efficiency ",ds));
 
 
@@ -203,13 +254,13 @@ int main(int argc, char **argv)
   fEff->SetParameter(0,0.8);
   fEff->SetParLimits(0,0,1.2);
   fEff->SetParameter(1,0);
-  fEff->SetParLimits(1,-0.5,0.5);
+  fEff->SetParLimits(1,-1,1);
 
 
   // CREATE THE BAT fitter
   // -----------------------------------------------
   
-  BatGraphFitter *fitter = new BatGraphFitter(gerror);
+  BatGraphFitter *fitter = new BatGraphFitter(gerror,fEff);
   fitter->SetPrecison(4);
   fitter->SetQbb(Qbb);
   fitter->SetGraphMaxMin(1,0);
@@ -217,17 +268,30 @@ int main(int argc, char **argv)
 
   // RUN THE GRAPH FIT - adding a confidence interval calculation
   // -----------------------------------------------------------
+
+
+  //fitter->fModel->WriteMarkovChain(Form("%s/output_mcmc.root",path.Data()), "RECREATE");
+
+  fitter->Fit();
+
+
   
-  fitter->Fit(fEff,"C");
+  TH1D* margdistro = (TH1D*)fitter->fModel->GetMarginalizedHistogram(2);
 
-
-
+  GetCI(margdistro);
+  
   // SAVE THE OUTPUT
-  // -------------------------------------------------------------
+  // ------------------------------------------------------------
+  
+  ce->Draw();
+  ce->Print(Form("%s/eff.pdf",path.Data()),"pdf");
+  margdistro->Draw();
   ce->Draw();
   ce->Print(Form("%s/eff.pdf)",path.Data()),"pdf");
+
   fitter->fModel->PrintAllMarginalized(Form("%s/eff_fit.pdf",path.Data()));
-  fitter->fModel->WriteMarginalizedDistributions(Form("%/output_eff.root",path.Data()), "RECREATE");
+  fitter->fModel->WriteMarginalizedDistributions(Form("%s/output_eff.root",path.Data()), "RECREATE");
+  //fitter->fModel->WriteMarkovChain(Form("%s/output_mcmc.root",path.Data()), "RECREATE");
 
 
   return 1;
