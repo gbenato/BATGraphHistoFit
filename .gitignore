@@ -2,6 +2,7 @@
 *.o
 *.pdf
 *#
+*.dat
 *.d
 *.root
 output/*
