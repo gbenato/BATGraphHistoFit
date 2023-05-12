@@ -1,6 +1,7 @@
 *~
 *.o
 *.pdf
+*#
 *.d
 *.root
 output/*

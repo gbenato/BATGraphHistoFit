@@ -66,6 +66,7 @@ BatGraphFitter::BatGraphFitter(TGraph *&g,TF1*&f,double error)
       fGraph->SetPointEYlow(i,error);
     }	
 
+  fGraph->SetTitle(f->GetTitle());
   fMin=-pow(10,9);
   fMax=pow(10,9);
   fTF1=f;
@@ -91,6 +92,7 @@ BatGraphFitter::BatGraphFitter(TGraph *g,TGraph *&gTrial,TGraph *&gSuccess,TF1 *
       fGraph->SetPointEYhigh(i,1);
       fGraph->SetPointEYlow(i,1);
     }
+  fGraph->SetTitle(g->GetTitle());
   fMode="B";
 
   fModel= new BAT_GraphFit("fit",f,1,fMode,fQbb);
@@ -116,6 +118,7 @@ BatGraphFitter::BatGraphFitter(TGraphErrors *&g,TF1 *&f)
       fGraph->SetPointEYlow(i,g->GetEY()[i]);
     }
   fTF1=f;
+  fGraph->SetTitle(g->GetTitle());
   fModel= new BAT_GraphFit("fit",f,1,fMode,fQbb);
     
   this->SetPrecison(2);

@@ -275,8 +275,12 @@ int main(int argc, char **argv)
     
     ce->Draw();
     ce->Print(Form("%s/bias_%s.pdf(",out_path.Data(),label.Data()),"pdf");
+    ce->SaveAs(Form("%s/bias_%s.C",out_path.Data(),label.Data()));
+
     margdistro_bias->Draw();
     ce->Draw();
+    ce->SaveAs(Form("%s/bias_%s_post.C",out_path.Data(),label.Data()));
+
     ce->Print(Form("%s/bias_%s.pdf)",out_path.Data(),label.Data()),"pdf");
     fitter_bias->fModel->PrintAllMarginalized(Form("%s/bias_fit_%s.pdf",out_path.Data(),label.Data()));
     fitter_bias->fModel->WriteMarginalizedDistributions(Form("%s/output_bias_%s.root",out_path.Data(),label.Data()), "RECREATE");
@@ -301,8 +305,12 @@ int main(int argc, char **argv)
     // save
     ce->Draw();
     ce->Print(Form("%s/reso_%s.pdf(",out_path.Data(),label.Data()),"pdf");
+    ce->SaveAs(Form("%s/reso_%s.C",out_path.Data(),label.Data()));
+    
     margdistro_reso->Draw();
     ce->Draw();
+    ce->SaveAs(Form("%s/reso_%s_post.C",out_path.Data(),label.Data()));
+
     ce->Print(Form("%s/reso_%s.pdf)",out_path.Data(),label.Data()),"pdf");
     fitter_reso->fModel->PrintAllMarginalized(Form("%s/reso_fit_%s.pdf",out_path.Data(),label.Data()));
     fitter_reso->fModel->WriteMarginalizedDistributions(Form("%s/output_reso_%s.root",out_path.Data(),label.Data()), "RECREATE");

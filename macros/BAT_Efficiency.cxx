@@ -1,19 +1,35 @@
 #include "TString.h"
 #include "TFile.h"
 #include "TH1D.h"
+#include "TFile.h"
+#include <BAT/BCLog.h>
+#include "TRandom3.h"
+#include "TF1.h"
+#include "TApplication.h"
+#include <iostream>
+#include <vector>
+#include <string>
+#include <getopt.h>
+#include <utility>
+#include "TSpectrum.h"
+#include <fstream>
 #include "src/BatGraphFitter.h"
 #include "TFile.h"
 #include <BAT/BCLog.h>
 #include "TRandom3.h"
 #include "TF1.h"
 #include "TApplication.h"
+#include <sstream>
 
 
 // MACRO TO CALCULATE THE EFFICIENCY USING THE PEAKS IMPLEMENTED IN BAT
 // Toby Dixon: toby.dixon@universite-paris-saclay.fr 11/5/2023
 
 
-std::vector<TH1D*>GetHistograms(TH1D* &h,TString title,std::vector<double>energies={1173,1333,1461,2615},double dE_center=10,double dE_side=30)
+std::vector<TH1D*>GetHistograms(TH1D* &h,TString title,
+				std::vector<double>energies={1173,1333,1461,2615},
+				std::vector<double> dE_center={10,10,10,10},
+				std::vector<double>dE_side={30,30,30,30})
 {
   // ** THIS IS THE METHOD THAT EXTRACTS THE posterior of the number of counts for each peak
   // You should supply a vector of energies
@@ -27,56 +43,71 @@ std::vector<TH1D*>GetHistograms(TH1D* &h,TString title,std::vector<double>energi
   std::vector<TH1D*>out;
   TCanvas *ci= new TCanvas();
   ci->Print(Form("%s.pdf(",title.Data()),"pdf");
+  int counter=0;
+  if (dE_side.size()!=energies.size()||dE_center.size()!=energies.size())
+    {
+      std::cout<<"ERROR: the size of sideband not same as center energy, check the cfg file!!"<<std::endl;
+      throw;
+    }
   for (auto & E : energies)
     {
 
       /* CREATE THE CANVAS
 	 -----------------------------------------------------
       */
-      
+
+      std::cout<<"Running the fit of "<<E<<std::endl;
+      std::cout<<"side = "<<dE_side[counter]<<" center = "<<dE_center[counter]<<std::endl;
       ci= new TCanvas(Form("c_%i",(int)E),Form("c_%i",(int)E));
       ci->cd();
       
       // PARAMETERS FOR THE FIT
       // ------------------------------------------------------
       std::vector<std::pair<double,double>> range;
-      range.push_back(std::make_pair(E-dE_side,E-dE_center));
-      range.push_back(std::make_pair(E-dE_center,E+dE_center));
-      range.push_back(std::make_pair(E+dE_center,E+dE_side));
+      range.push_back(std::make_pair(E-dE_side[counter],E-dE_center[counter]));
+      range.push_back(std::make_pair(E-dE_center[counter],E+dE_center[counter]));
+      range.push_back(std::make_pair(E+dE_center[counter],E+dE_side[counter]));
       std::vector<double>probs{0,1,0};
 
-
-      h->GetXaxis()->SetRangeUser(E-dE_side-5,E+dE_side+5);
-
+      h->GetXaxis()->SetRangeUser(E-dE_side[counter]-5,E+dE_side[counter]+5);
+      
 
       // INITIAL PARS
       // ------------------------------------------------------
       double max=h->GetMaximum();
-      int bin1 = h->FindBin(E-dE_side);
-      int bin2 = h->FindBin(E-dE_center);
-      double binwidth=h->GetBinWidth(bin1);
+      int bin1 = h->FindBin(E-dE_side[counter]);
+      int bin2 = h->FindBin(E-dE_center[counter]);
+      int bin4 = h->FindBin(E+dE_side[counter]);
+      int bin3 = h->FindBin(E+dE_center[counter]);
 
-      double B = h->Integral(bin1,bin2)/(bin2-bin1);
-      double Smax = max-B;
+      double binwidth=h->GetBinWidth(bin1);
+      
+      double Bl = h->Integral(bin1,bin2)/(bin2-bin1);
+      double Br=h->Integral(bin3,bin4)/(bin4-bin3);
+      double Smax = max-(Br+Bl)/2.;
       double Sest = Smax*(sqrt(2*TMath::Pi()*5))/binwidth;
 
-
+      double slope_est=(Br-Bl)/(dE_center[counter]+dE_side[counter]);
       // MAKE FIT FUNCTIOn                                                                                                                                                                                
       //-------------------------------------------------------                                                                                                                                            
-      TF1 *fInt=new TF1("fInt",Form("[0]*x+[1]*pow(x-%f,2)/2.",E),E-dE_side-5,E+dE_side+5);
-      fInt->SetParLimits(0,0,3*B);
-      fInt->SetParameter(1,0);
-      fInt->SetParLimits(1,-B*0.5/30.,+B*0.5/30.);
-
+      TF1 *fInt=new TF1("fInt",Form("[0]*x+[1]*pow(x-%f,2)/2.",E),E-dE_side[counter]-5,E+dE_side[counter]+5);
+      fInt->SetParLimits(0,0,3*(Br+Bl)/2.);
+      fInt->SetParameter(0,(Br+Bl)/2.);
+      fInt->SetParameter(1,slope_est);
+      fInt->SetParLimits(1,-10*fabs(slope_est),+10*fabs(slope_est));
+      
       // MAKE THE FITTER
       // ------------------------------------------------------
-      BatGraphFitter *fitter_count_pass = new BatGraphFitter(h,fInt,range,probs,3*Sest);
+      BatGraphFitter *fitter_count_pass = new BatGraphFitter(h,fInt,range,probs,5*Sest);
       fitter_count_pass->SetPrecison(3);
       
 
       // RUN THE FIT AND DRAW
       //-------------------------------------------------------
+
       fitter_count_pass->Fit();
+      h->Draw();
+      fInt->DrawDerivative("Csame");
       ci->Draw();
       ci->Print(Form("%s.pdf",title.Data()),"pdf");
       
@@ -89,9 +120,9 @@ std::vector<TH1D*>GetHistograms(TH1D* &h,TString title,std::vector<double>energi
       
       ci->Draw();
       ci->Print(Form("%s.pdf",title.Data()),"pdf");
-      //fitter_count_pass->fModel->PrintAllMarginalized(Form("%s_%i_plots.pdf",title.Data(),(int)E));
       out.push_back(margdistro);
-      
+      counter++;
+
     }
   ci->Print(Form("%s.pdf)",title.Data()),"pdf");
 
@@ -169,27 +200,154 @@ void GetCI(TH1D *&h)
     }
 }
 
+void ReadCfg(TString path,std::vector<double>&E,std::vector<double>&center,std::vector<double>&side,std::vector<bool>&on)
+{
+  // method to read the cfg options
 
 
+  std::fstream file;
+  file.open(path);
+  std::cout<<"Reading file "<<path<<std::endl;
+  if (!file.is_open())
+    {
+      std::cout<<"ERROR: cfg file doesnt exist"<<std::endl;
+      throw;
+    }
+  while (file.is_open() &&!file.eof())
+    {
+      std::stringstream ss;
+      std::string line;
+      getline(file,line);
+      while (getline(file, line))
+        {
 
+	  double E_tmp,Center_tmp,Side_tmp;
+	  bool On_tmp;
+          std::istringstream iss(line);
+
+          iss >> E_tmp;
+          iss >> Center_tmp;
+          iss >> Side_tmp;
+          iss >> On_tmp;
+
+	  E.push_back(E_tmp);
+	  center.push_back(Center_tmp);
+	  side.push_back(Side_tmp);
+	  on.push_back(On_tmp);
+	  std::cout<<"Add peak at energy "<<E_tmp<<" and range "<<"center "<<Center_tmp<<" side "<<Side_tmp<<" which is on ? "<<On_tmp<<std::endl;
+	}
+    }
+}
+
+
+void Usage()
+{
+  std::cout << std::endl << std::endl;
+  std::cout << "---------------------------------------------------------------------------------" << std::endl;
+  if( std::getenv("USER") != NULL )
+    std::cout << "Hi " << std::getenv("USER") <<"! The usage of this wonderful program is: " << std::endl;
+  else
+    std::cout << "Hi there! The usage of this wonderful program is:" << std::endl;
+  std::cout<<"./BAT_Efficiency"<<std::endl;
+  std::cout<<"options "<<std::endl;
+  std::cout<<"------------------------------------------------------------"<<std::endl;
+  std::cout<<"-i (or --input-path)        [directory for input txt] (default: inputs/eff/m1_eff_histo_withtimecut_PCACut_directsum_)"<<std::endl;
+  std::cout<<"-o (or --output-path)       [directory for output file (default: output/CUORE_eff/] "<<std::endl;
+  std::cout<<"-c (or --cfg-path)          [directory for output file (default: cfs/EffPeaks.cfg] "<<std::endl;
+  std::cout<<"-d (or --dataset)           [dataset number : default 3602] "<<std::endl;
+  std::cout<<"-f (or --function)          [eff function: default [0]+[1]*x/4000]"<<std::endl;
+  std::cout<<"-l (or --label)             [label for outputs default "" ]"<<std::endl;
+  std::cout<<"-q (or --q-value)           [q-value to evaluate the function at default: 2527 keV]"<<std::endl;
+  std::cout<<"-h (or --help)              [this help]"<<std::endl;
+
+}
+
+
+	  
   
 int main(int argc, char **argv)
 {
 
-  // calculation of efficiency by peaks
-  
-  // please replace with a cfg file
-  //std::map<TString,PeakInfo> peak_map;
-  TApplication *app  =new TApplication("app",&argc,argv);
-  gROOT->SetBatch(1);
+  int ds=3602;
+  TString fit_function="[0]+[1]*x/4000.";
+  TString path="inputs/eff/m1_eff_histo_withtimecut_PCACut_directsum_";
+  TString out_path = Form("output/CUORE_eff/");
+  TString label="";
+  double Qbb=2527;
+  TString cfg_path="cfg/EffPeaks.cfg";
+
+  {
+    static struct option long_options[] = {
+                                         { "input-path",        required_argument,  nullptr, 'i' },
+                                         { "output-path",       required_argument,  nullptr,'o'},
+					 { "cfg-path",       required_argument,  nullptr,'c'},
+					 { "dataset",required_argument, nullptr,'d'},
+                                         { "function",      required_argument,nullptr,'f'  },
+                                         { "label",    required_argument, nullptr,'l'},
+                                         { "q-value",           required_argument,  nullptr, 'q' },
+                                         { "help",              no_argument,        nullptr,'h'},
+                                         {nullptr, 0, nullptr, 0}
+  };
+
+    const char* const short_options = "i:o:d:f:l:q:h";
+
+    int c;
+    
+    while ((c = getopt_long(argc, argv, short_options, long_options, nullptr)) != -1 ) {
+      switch (c) {
+      case 'i': {
+	path = optarg;
+	break;
+      }
+	
+      case 'o': {
+	out_path = optarg;
+	break;
+      }
+      case 'c': {
+	cfg_path = optarg;
+        break;
+      }
+	
+      case 'l':{
+	label=optarg;
+	break;
+      }
+	
+      case 'f': {
+	fit_function = optarg;
+	break;
+      }
+
+	
+      case 'q': {
+	Qbb = atof(optarg);
+	break;
+      }
+      case'h': {
+	Usage();
+	return 0;
+      }
+      default: {
+	exit(1);
+      }
+	
+      }
+      
+
+
+    }
+  }
+
+
+
+
 
 
   // READ THE DATA
   // ----------------------------------------------------------
 
-  // hardcoded should change !!!!
-  int ds=atoi(argv[1]);
-  TFile *f = new TFile(Form("/home/tdixon/BATGraphHistoFit/inputs/m1_eff_histo_withtimecut_PCACut_directsum_ds%i.root",ds));
+  TFile *f = new TFile(Form("%sds%i.root",path.Data(),ds));
 
  
   TH1D *h = (TH1D*)f->Get(Form("h_ds%i",ds));
@@ -210,20 +368,23 @@ int main(int argc, char **argv)
   // --------------------------------------------------
   // SET THE ENERGIES - should change to cfg file
 
-  std::vector<double> energies={835,1173,1333,1461,2615};
-  double dE_center=10;
-  double dE_side=30;
-  double Qbb=2527; // value to compute an observable
+  std::vector<double>energies;
+  std::vector<double>dE_center;
+  std::vector<double>dE_side;
+  std::vector<bool>is_on;
+  
+  ReadCfg(cfg_path,energies,dE_center,dE_side,is_on);
+
   
   // set the output path
   //---------------------------------------------------
-  TString path = Form("output/CUORE_eff/ds%i/",ds);
+  TString out_path_ds = Form("%s/ds%i%s/",out_path.Data(),ds,label.Data());
 
   
   // RUNT THE COUNTING ANALYSES
   // -------------------------------------------------
-  std::vector<TH1D*>hpass = GetHistograms(hpca,Form("%s/out_pca_pass",path.Data()),energies,dE_center,dE_side);
-  std::vector<TH1D*>hfail = GetHistograms(hpca_fail,Form("%s/out_pca_fail",path.Data()),energies,dE_center,dE_side);
+  std::vector<TH1D*>hpass = GetHistograms(hpca,Form("%s/out_pca_pass",out_path_ds.Data()),energies,dE_center,dE_side);
+  std::vector<TH1D*>hfail = GetHistograms(hpca_fail,Form("%s/out_pca_fail",out_path_ds.Data()),energies,dE_center,dE_side);
   
 
 
@@ -233,24 +394,32 @@ int main(int argc, char **argv)
   TGraphErrors *gerror = new TGraphErrors(); 
 
   TCanvas *ce = new TCanvas();
-  ce->Print(Form("%s/eff.pdf(",path.Data()),"pdf");
+  ce->Print(Form("%s/eff.pdf(",out_path_ds.Data()),"pdf");
 
+  int counter=0;
   for (int i=0;i<hpass.size();i++)
     {
       double mu,sigma;
       TH1D * hout=toy_combine(hpass[i],hfail[i],mu,sigma,energies[i]);
-      gerror->SetPoint(i,energies[i],mu);
-      gerror->SetPointError(i,0,sigma);
+      if (is_on[i]==true)
+	{
+	  gerror->SetPoint(counter,energies[i],mu);
+	  gerror->SetPointError(counter,0,sigma);
+	  counter++;
+	}
       hout->Draw();
-      ce->Print(Form("%s/eff.pdf",path.Data()),"pdf");
+      ce->Print(Form("%s/eff.pdf",out_path_ds.Data()),"pdf");
     }
 
   gerror->SetTitle(Form("PCA efficiency for ds %i ; Energy [keV] ; Efficiency ",ds));
 
 
+  gerror->SaveAs(Form("%s/graph.root",out_path_ds.Data()));
+  
+  
   // CREATE A FUNCTION TO FIT THE EFFICIENCY
   //------------------------------------------
-  TF1 *fEff = new TF1("fEff","[0]+[1]*x/4000",0,4000);
+  TF1 *fEff = new TF1("fEff",fit_function,0,4000);
   fEff->SetParameter(0,0.8);
   fEff->SetParLimits(0,0,1.2);
   fEff->SetParameter(1,0);
@@ -284,14 +453,13 @@ int main(int argc, char **argv)
   // ------------------------------------------------------------
   
   ce->Draw();
-  ce->Print(Form("%s/eff.pdf",path.Data()),"pdf");
+  ce->Print(Form("%s/eff.pdf",out_path_ds.Data()),"pdf");
   margdistro->Draw();
   ce->Draw();
-  ce->Print(Form("%s/eff.pdf)",path.Data()),"pdf");
+  ce->Print(Form("%s/eff.pdf)",out_path_ds.Data()),"pdf");
 
-  fitter->fModel->PrintAllMarginalized(Form("%s/eff_fit.pdf",path.Data()));
-  fitter->fModel->WriteMarginalizedDistributions(Form("%s/output_eff.root",path.Data()), "RECREATE");
-  //fitter->fModel->WriteMarkovChain(Form("%s/output_mcmc.root",path.Data()), "RECREATE");
+  fitter->fModel->PrintAllMarginalized(Form("%s/eff_fit.pdf",out_path_ds.Data()));
+  fitter->fModel->WriteMarginalizedDistributions(Form("%s/output_eff.root",out_path_ds.Data()), "RECREATE");
 
 
   return 1;
