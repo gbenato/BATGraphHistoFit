@@ -85,19 +85,22 @@ std::vector<TH1D*>GetHistograms(TH1D* &h,TString title,
       double Bl = h->Integral(bin1,bin2)/(bin2-bin1);
       double Br=h->Integral(bin3,bin4)/(bin4-bin3);
       double Smax = max-(Br+Bl)/2.;
-      double Sest = Smax*(sqrt(2*TMath::Pi()*5))/binwidth;
-
+      double Sest = 50+fabs(h->Integral(bin2,bin3)-dE_center[counter]*(Br+Bl));
+      
       double slope_est=(Br-Bl)/(dE_center[counter]+dE_side[counter]);
+      double slope_max=(Br+2)/(dE_center[counter]+dE_side[counter]);
       // MAKE FIT FUNCTIOn                                                                                                                                                                                
-      //-------------------------------------------------------                                                                                                                                            
+      //-------------------------------------------------------
+      std::cout<<slope_est<<std::endl;
       TF1 *fInt=new TF1("fInt",Form("[0]*x+[1]*pow(x-%f,2)/2.",E),E-dE_side[counter]-5,E+dE_side[counter]+5);
       fInt->SetParLimits(0,0,3*(Br+Bl)/2.);
       fInt->SetParameter(0,(Br+Bl)/2.);
       fInt->SetParameter(1,slope_est);
-      fInt->SetParLimits(1,-10*fabs(slope_est),+10*fabs(slope_est));
-      
+      fInt->SetParLimits(1,-5*fabs(slope_max),+5*fabs(slope_max));
+     
       // MAKE THE FITTER
       // ------------------------------------------------------
+      std::cout<<"Sest = "<<Sest<<std::endl;
       BatGraphFitter *fitter_count_pass = new BatGraphFitter(h,fInt,range,probs,5*Sest);
       fitter_count_pass->SetPrecison(3);
       
@@ -106,9 +109,7 @@ std::vector<TH1D*>GetHistograms(TH1D* &h,TString title,
       //-------------------------------------------------------
 
       fitter_count_pass->Fit();
-      h->Draw();
-      fInt->DrawDerivative("Csame");
-      ci->Draw();
+     
       ci->Print(Form("%s.pdf",title.Data()),"pdf");
       
 
@@ -179,12 +180,31 @@ void GetCI(TH1D *&h)
       q=0.9;
       h->GetQuantiles(1,&x,&q);
       std::cout<<"no measurment can only set limit  < "<<x<<std::endl;
+      double low,high;
+      qdown=0;
+      h->GetQuantiles(1,&low,&qdown);
+      h->GetQuantiles(1,&high,&qup);
+      double e_low = pe-low;
+      double e_high=high-pe;
+
+      std::cout<<" Measurment: "<<pe<<" +/- "<<e_high<<" / "<<e_low<<std::endl;
+
+
     }
   else if (qup>1)
     {
       q=0.1;
       h->GetQuantiles(1,&x,&q);
       std::cout<<"no measurment can only set limit  > "<<x<<std::endl;
+      double low,high;
+      qup=1;
+      h->GetQuantiles(1,&low,&qdown);
+      h->GetQuantiles(1,&high,&qup);
+      double e_low = pe-low;
+      double e_high=high-pe;
+
+      std::cout<<" Measurment: "<<pe<<" +/- "<<e_high<<" / "<<e_low<<std::endl;
+
     }
   else
     {
@@ -255,6 +275,7 @@ void Usage()
   std::cout<<"-o (or --output-path)       [directory for output file (default: output/CUORE_eff/] "<<std::endl;
   std::cout<<"-c (or --cfg-path)          [directory for output file (default: cfs/EffPeaks.cfg] "<<std::endl;
   std::cout<<"-d (or --dataset)           [dataset number : default 3602] "<<std::endl;
+  std::cout<<"-m (or --mode)              [mode either P for PCA, or M for multiplicity]"<<std::endl;
   std::cout<<"-f (or --function)          [eff function: default [0]+[1]*x/4000]"<<std::endl;
   std::cout<<"-l (or --label)             [label for outputs default "" ]"<<std::endl;
   std::cout<<"-q (or --q-value)           [q-value to evaluate the function at default: 2527 keV]"<<std::endl;
@@ -271,11 +292,12 @@ int main(int argc, char **argv)
   int ds=3602;
   TString fit_function="[0]+[1]*x/4000.";
   TString path="inputs/eff/m1_eff_histo_withtimecut_PCACut_directsum_";
-  TString out_path = Form("output/CUORE_eff/");
+  TString out_path = Form("output/CUORE_eff");
   TString label="";
   double Qbb=2527;
   TString cfg_path="cfg/EffPeaks.cfg";
-
+  TString mode="P";
+  
   {
     static struct option long_options[] = {
                                          { "input-path",        required_argument,  nullptr, 'i' },
@@ -284,12 +306,13 @@ int main(int argc, char **argv)
 					 { "dataset",required_argument, nullptr,'d'},
                                          { "function",      required_argument,nullptr,'f'  },
                                          { "label",    required_argument, nullptr,'l'},
+					 { "mode", required_argument,nullptr,'m'},
                                          { "q-value",           required_argument,  nullptr, 'q' },
                                          { "help",              no_argument,        nullptr,'h'},
                                          {nullptr, 0, nullptr, 0}
   };
 
-    const char* const short_options = "i:o:d:f:l:q:h";
+    const char* const short_options = "i:o:d:f:l:c:q:m:h";
 
     int c;
     
@@ -302,6 +325,10 @@ int main(int argc, char **argv)
 	
       case 'o': {
 	out_path = optarg;
+	break;
+      }
+      case 'd':{
+	ds=atoi(optarg);
 	break;
       }
       case 'c': {
@@ -324,11 +351,16 @@ int main(int argc, char **argv)
 	Qbb = atof(optarg);
 	break;
       }
+      case 'm':{
+	mode=optarg;
+	break;
+      }
       case'h': {
 	Usage();
 	return 0;
       }
       default: {
+	std::cout<<"def "<<optarg<<std::endl;
 	exit(1);
       }
 	
@@ -346,7 +378,7 @@ int main(int argc, char **argv)
 
   // READ THE DATA
   // ----------------------------------------------------------
-
+  out_path+=TString("_")+mode+TString("/");
   TFile *f = new TFile(Form("%sds%i.root",path.Data(),ds));
 
  
@@ -362,6 +394,9 @@ int main(int argc, char **argv)
   
   hpca->Rebin(1/hpca->GetBinWidth(2));
   hpca_fail->Rebin(1/hpca_fail->GetBinWidth(2));
+  hm->Rebin(1/hm->GetBinWidth(2));
+  hm_fail->Rebin(1/hm_fail->GetBinWidth(2));
+
 
 
 
@@ -383,10 +418,20 @@ int main(int argc, char **argv)
   
   // RUNT THE COUNTING ANALYSES
   // -------------------------------------------------
-  std::vector<TH1D*>hpass = GetHistograms(hpca,Form("%s/out_pca_pass",out_path_ds.Data()),energies,dE_center,dE_side);
-  std::vector<TH1D*>hfail = GetHistograms(hpca_fail,Form("%s/out_pca_fail",out_path_ds.Data()),energies,dE_center,dE_side);
-  
+  std::vector<TH1D*>hpass;
+  std::vector<TH1D*>hfail; 
 
+  if (mode=="P")
+    {
+      hpass = GetHistograms(hpca,Form("%s/out_pca_pass",out_path_ds.Data()),energies,dE_center,dE_side);
+      hfail = GetHistograms(hpca_fail,Form("%s/out_pca_fail",out_path_ds.Data()),energies,dE_center,dE_side);
+    }
+  else if (mode=="M")
+    {
+      // check this
+      hpass = GetHistograms(hm,Form("%s/out_multi_pass",out_path_ds.Data()),energies,dE_center,dE_side);
+      hfail = GetHistograms(hm_fail,Form("%s/out_multi_fail",out_path_ds.Data()),energies,dE_center,dE_side);
+    }
 
 
   // FOR EACH PEAK GET A POSTERIOR ON EFFICINECY (TOY MC) and save them to graph
@@ -445,7 +490,7 @@ int main(int argc, char **argv)
 
 
   
-  TH1D* margdistro = (TH1D*)fitter->fModel->GetMarginalizedHistogram(2);
+  TH1D* margdistro = (TH1D*)fitter->fModel->GetMarginalizedHistogram(fEff->GetNpar());
 
   GetCI(margdistro);
   

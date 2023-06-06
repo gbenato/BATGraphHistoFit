@@ -1,0 +1,142 @@
+F
+RUNNING FIT WITH RANGE: 2960 ' 3100
+***************************************************
+RUNNING FIT WITH RANGE: 2960 ' 3100
+***************************************************
+RUNNING FIT WITH RANGE: 2960 ' 3100
+***************************************************
+Making fit 0 with 0
+**************************************
+ 
+making fit to toy with INF with S+B model
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.13614e-05
+parameter T_{1/2}^{-1} 1.97828e-28
+ 
+Fit took : 0 ms
+ 
+ 
+making fit to toy with INF with B model
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.36197e-05
+ 
+Fit took : 0 ms
+ 
+ 
+making fit to toy with INF with S fixed model
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.36197e-05
+ 
+Fit took : 0 ms
+ 
+t0 = 2.23117
+maxlogL = -45.386 maxlogL(S= 0 ) = -46.5016 maxlogL(S= 0 ) = -46.5016
+test stat (S) = 2.23117
+t0            = 2.23117
+ 
+ 
+ 
+ +------------------------------------------------------+
+ |                                                      |
+ | BAT version 1.0.0                                    |
+ | Copyright (C) 2007-2018, the BAT core developer team |
+ | All rights reserved.                                 |
+ |                                                      |
+ | For the licensing terms see doc/COPYING              |
+ | For documentation see http://mpp.mpg.de/bat          |
+ | Please cite: DOI 10.1016/j.cpc.2009.06.026           |
+ |              http://arxiv.org/abs/0808.2552          |
+ |                                                      |
+ +------------------------------------------------------+
+
+Making fit 0 with 1e-28
+**************************************
+ 
+making fit to toy with 1.000000E+28 with S+B model
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 0.001
+parameter T_{1/2}^{-1} 2e-26
+ 
+Fit took : 77 ms
+ 
+ 
+making fit to toy with 1.000000E+28 with B model
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 0.002
+ 
+Fit took : 29 ms
+ 
+ 
+making fit to toy with 1.000000E+28 with S fixed model
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 0.002
+ 
+Fit took : 17 ms
+ 
+t0 = -64699.9
+pb = 88.6446
+maxlogL = -231328 maxlogL(S= 1e-28 ) = -198940 maxlogL(S= 0 ) = -198978
+test stat (S) = -64775.3
+t0            = -64699.9
+ 
+ 
+ 
+Making fit 0 with 2e-28
+**************************************
+ 
+making fit to toy with 5.000000E+27 with S+B model
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 0.001
+parameter T_{1/2}^{-1} 2e-26
+ 
+Fit took : 151 ms
+ 
+ 
+making fit to toy with 5.000000E+27 with B model
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 0.002
+ 
+Fit took : 79 ms
+ 
+ 
+making fit to toy with 5.000000E+27 with S fixed model
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 0.002
+ 
+Fit took : 77 ms
+ 
+t0 = -130134
+pb = 40.405
+maxlogL = -553788 maxlogL(S= 2e-28 ) = -488569 maxlogL(S= 0 ) = -488721
+test stat (S) = -130438
+t0            = -130134
+ 
+ 
+ 

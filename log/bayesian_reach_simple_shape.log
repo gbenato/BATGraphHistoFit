@@ -1,0 +1,2174 @@
+B
+RUNNING FIT WITH RANGE: 2960 ' 3100
+***************************************************
+RUNNING FIT WITH RANGE: 2960 ' 3100
+***************************************************
+ 
+ 
+ 
+Fitting toy 0
+-------------------------------------
+Mode is U
+ +------------------------------------------------------+
+ |                                                      |
+ | BAT version 1.0.0                                    |
+ | Copyright (C) 2007-2018, the BAT core developer team |
+ | All rights reserved.                                 |
+ |                                                      |
+ | For the licensing terms see doc/COPYING              |
+ | For documentation see http://mpp.mpg.de/bat          |
+ | Please cite: DOI 10.1016/j.cpc.2009.06.026           |
+ |              http://arxiv.org/abs/0808.2552          |
+ |                                                      |
+ +------------------------------------------------------+
+
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.66465e-05
+ 
+Fit took : 304 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.66458e-05
+parameter T_{1/2}^{-1} 2.22045e-42
+ 
+Fit took : 320 ms
+ 
+ 
+ 
+ 
+Fitting toy 100
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.36199e-05
+ 
+Fit took : 990 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.28218e-05
+parameter T_{1/2}^{-1} 7.00118e-29
+ 
+Fit took : 1369 ms
+ 
+ 
+ 
+ 
+Fitting toy 200
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.36199e-05
+ 
+Fit took : 714 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.26323e-05
+parameter T_{1/2}^{-1} 8.65014e-29
+ 
+Fit took : 1584 ms
+ 
+ 
+ 
+ 
+Fitting toy 300
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51332e-05
+ 
+Fit took : 558 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51329e-05
+parameter T_{1/2}^{-1} 1.28786e-40
+ 
+Fit took : 858 ms
+ 
+ 
+ 
+ 
+Fitting toy 400
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 9.07991e-06
+ 
+Fit took : 402 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 9.07954e-06
+parameter T_{1/2}^{-1} 1.19404e-39
+ 
+Fit took : 606 ms
+ 
+ 
+ 
+ 
+Fitting toy 500
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 3.02663e-06
+ 
+Fit took : 506 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.68741e-06
+parameter T_{1/2}^{-1} 1.17314e-28
+ 
+Fit took : 641 ms
+ 
+ 
+ 
+ 
+Fitting toy 600
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 2.26998e-05
+ 
+Fit took : 532 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 2.26972e-05
+parameter T_{1/2}^{-1} 6.65101e-36
+ 
+Fit took : 1091 ms
+ 
+ 
+ 
+ 
+Fitting toy 700
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.36199e-05
+ 
+Fit took : 732 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.36197e-05
+parameter T_{1/2}^{-1} 7.23865e-40
+ 
+Fit took : 952 ms
+ 
+ 
+ 
+ 
+Fitting toy 800
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.36199e-05
+ 
+Fit took : 512 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.36197e-05
+parameter T_{1/2}^{-1} 8.48766e-40
+ 
+Fit took : 715 ms
+ 
+ 
+ 
+ 
+Fitting toy 900
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.96731e-05
+ 
+Fit took : 797 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.9672e-05
+parameter T_{1/2}^{-1} 1.00718e-37
+ 
+Fit took : 881 ms
+ 
+ 
+ 
+ 
+Fitting toy 1000
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.36199e-05
+ 
+Fit took : 559 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.36195e-05
+parameter T_{1/2}^{-1} 7.56673e-38
+ 
+Fit took : 957 ms
+ 
+ 
+ 
+ 
+Fitting toy 1100
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 4.53995e-06
+ 
+Fit took : 447 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 4.53989e-06
+parameter T_{1/2}^{-1} 5.4956e-41
+ 
+Fit took : 485 ms
+ 
+ 
+ 
+ 
+Fitting toy 1200
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.05932e-05
+ 
+Fit took : 654 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.05931e-05
+parameter T_{1/2}^{-1} 1.88738e-41
+ 
+Fit took : 837 ms
+ 
+ 
+ 
+ 
+Fitting toy 1300
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.21065e-05
+ 
+Fit took : 543 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.1181e-05
+parameter T_{1/2}^{-1} 8.10754e-29
+ 
+Fit took : 589 ms
+ 
+ 
+ 
+ 
+Fitting toy 1400
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 9.07991e-06
+ 
+Fit took : 512 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 9.07881e-06
+parameter T_{1/2}^{-1} 5.80147e-39
+ 
+Fit took : 570 ms
+ 
+ 
+ 
+ 
+Fitting toy 1500
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.66465e-05
+ 
+Fit took : 572 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.66464e-05
+parameter T_{1/2}^{-1} 5.55112e-43
+ 
+Fit took : 1045 ms
+ 
+ 
+ 
+ 
+Fitting toy 1600
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51332e-05
+ 
+Fit took : 539 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51329e-05
+parameter T_{1/2}^{-1} 1.28786e-40
+ 
+Fit took : 799 ms
+ 
+ 
+ 
+ 
+Fitting toy 1700
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.05932e-05
+ 
+Fit took : 815 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.05931e-05
+parameter T_{1/2}^{-1} 1.88738e-41
+ 
+Fit took : 825 ms
+ 
+ 
+ 
+ 
+Fitting toy 1800
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 7.56659e-06
+ 
+Fit took : 450 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 7.56624e-06
+parameter T_{1/2}^{-1} 1.40443e-40
+ 
+Fit took : 664 ms
+ 
+ 
+ 
+ 
+Fitting toy 1900
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.81598e-05
+ 
+Fit took : 732 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.77884e-05
+parameter T_{1/2}^{-1} 3.25548e-29
+ 
+Fit took : 893 ms
+ 
+ 
+ 
+ 
+Fitting toy 2000
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 6.05327e-06
+ 
+Fit took : 352 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 6.05281e-06
+parameter T_{1/2}^{-1} 1.27676e-41
+ 
+Fit took : 505 ms
+ 
+ 
+ 
+ 
+Fitting toy 2100
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 7.56659e-06
+ 
+Fit took : 336 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 7.56555e-06
+parameter T_{1/2}^{-1} 1.11022e-42
+ 
+Fit took : 463 ms
+ 
+ 
+ 
+ 
+Fitting toy 2200
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.21065e-05
+ 
+Fit took : 533 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.21056e-05
+parameter T_{1/2}^{-1} 2.08722e-40
+ 
+Fit took : 632 ms
+ 
+ 
+ 
+ 
+Fitting toy 2300
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.36199e-05
+ 
+Fit took : 455 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.17452e-05
+parameter T_{1/2}^{-1} 1.64243e-28
+ 
+Fit took : 735 ms
+ 
+ 
+ 
+ 
+Fitting toy 2400
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.36199e-05
+ 
+Fit took : 370 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.36198e-05
+parameter T_{1/2}^{-1} 2.22045e-42
+ 
+Fit took : 525 ms
+ 
+ 
+ 
+ 
+Fitting toy 2500
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.81598e-05
+ 
+Fit took : 604 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.72758e-05
+parameter T_{1/2}^{-1} 7.74342e-29
+ 
+Fit took : 713 ms
+ 
+ 
+ 
+ 
+Fitting toy 2600
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.36199e-05
+ 
+Fit took : 564 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.16955e-05
+parameter T_{1/2}^{-1} 1.68566e-28
+ 
+Fit took : 743 ms
+ 
+ 
+ 
+ 
+Fitting toy 2700
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 2.26998e-05
+ 
+Fit took : 845 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 2.26986e-05
+parameter T_{1/2}^{-1} 6.66134e-42
+ 
+Fit took : 1143 ms
+ 
+ 
+ 
+ 
+Fitting toy 2800
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51332e-05
+ 
+Fit took : 570 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51327e-05
+parameter T_{1/2}^{-1} 2.95319e-40
+ 
+Fit took : 827 ms
+ 
+ 
+ 
+ 
+Fitting toy 2900
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.21065e-05
+ 
+Fit took : 417 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.21064e-05
+parameter T_{1/2}^{-1} 4.34097e-40
+ 
+Fit took : 713 ms
+ 
+ 
+ 
+ 
+Fitting toy 3000
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.05932e-05
+ 
+Fit took : 336 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.05931e-05
+parameter T_{1/2}^{-1} 1.88738e-41
+ 
+Fit took : 477 ms
+ 
+ 
+ 
+ 
+Fitting toy 3100
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.66465e-05
+ 
+Fit took : 667 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.53589e-05
+parameter T_{1/2}^{-1} 1.12791e-28
+ 
+Fit took : 880 ms
+ 
+ 
+ 
+ 
+Fitting toy 3200
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.81598e-05
+ 
+Fit took : 526 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.81598e-05
+parameter T_{1/2}^{-1} 2.27041e-40
+ 
+Fit took : 668 ms
+ 
+ 
+ 
+ 
+Fitting toy 3300
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 7.56659e-06
+ 
+Fit took : 499 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 7.56624e-06
+parameter T_{1/2}^{-1} 1.40443e-40
+ 
+Fit took : 404 ms
+ 
+ 
+ 
+ 
+Fitting toy 3400
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.05932e-05
+ 
+Fit took : 515 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.05931e-05
+parameter T_{1/2}^{-1} 1.88738e-41
+ 
+Fit took : 613 ms
+ 
+ 
+ 
+ 
+Fitting toy 3500
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.96731e-05
+ 
+Fit took : 593 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.9021e-05
+parameter T_{1/2}^{-1} 5.71267e-29
+ 
+Fit took : 854 ms
+ 
+ 
+ 
+ 
+Fitting toy 3600
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.81598e-05
+ 
+Fit took : 513 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.7337e-05
+parameter T_{1/2}^{-1} 7.20719e-29
+ 
+Fit took : 907 ms
+ 
+ 
+ 
+ 
+Fitting toy 3700
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 7.56659e-06
+ 
+Fit took : 318 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 7.56624e-06
+parameter T_{1/2}^{-1} 1.40443e-40
+ 
+Fit took : 579 ms
+ 
+ 
+ 
+ 
+Fitting toy 3800
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 2.57264e-05
+ 
+Fit took : 628 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 2.57263e-05
+parameter T_{1/2}^{-1} 0
+ 
+Fit took : 1037 ms
+ 
+ 
+ 
+ 
+Fitting toy 3900
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.66465e-05
+ 
+Fit took : 807 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.43722e-05
+parameter T_{1/2}^{-1} 1.99226e-28
+ 
+Fit took : 927 ms
+ 
+ 
+ 
+ 
+Fitting toy 4000
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.21065e-05
+ 
+Fit took : 603 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.21063e-05
+parameter T_{1/2}^{-1} 0
+ 
+Fit took : 525 ms
+ 
+ 
+ 
+ 
+Fitting toy 4100
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51332e-05
+ 
+Fit took : 477 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.4191e-05
+parameter T_{1/2}^{-1} 8.25363e-29
+ 
+Fit took : 755 ms
+ 
+ 
+ 
+ 
+Fitting toy 4200
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 3.02663e-06
+ 
+Fit took : 540 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 3.02651e-06
+parameter T_{1/2}^{-1} 1.11022e-41
+ 
+Fit took : 577 ms
+ 
+ 
+ 
+ 
+Fitting toy 4300
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.36199e-05
+ 
+Fit took : 449 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.2866e-05
+parameter T_{1/2}^{-1} 6.61803e-29
+ 
+Fit took : 648 ms
+ 
+ 
+ 
+ 
+Fitting toy 4400
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 9.07991e-06
+ 
+Fit took : 523 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 9.07947e-06
+parameter T_{1/2}^{-1} 1.80966e-40
+ 
+Fit took : 842 ms
+ 
+ 
+ 
+ 
+Fitting toy 4500
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 3.02663e-05
+ 
+Fit took : 956 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 2.98887e-05
+parameter T_{1/2}^{-1} 3.28996e-29
+ 
+Fit took : 1096 ms
+ 
+ 
+ 
+ 
+Fitting toy 4600
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.36199e-05
+ 
+Fit took : 514 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.31713e-05
+parameter T_{1/2}^{-1} 3.9291e-29
+ 
+Fit took : 472 ms
+ 
+ 
+ 
+ 
+Fitting toy 4700
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51332e-05
+ 
+Fit took : 490 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51304e-05
+parameter T_{1/2}^{-1} 4.0543e-36
+ 
+Fit took : 1016 ms
+ 
+ 
+ 
+ 
+Fitting toy 4800
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.21065e-05
+ 
+Fit took : 502 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.15261e-05
+parameter T_{1/2}^{-1} 5.07789e-29
+ 
+Fit took : 641 ms
+ 
+ 
+ 
+ 
+Fitting toy 4900
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.66465e-05
+ 
+Fit took : 761 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.66466e-05
+parameter T_{1/2}^{-1} 7.49251e-37
+ 
+Fit took : 778 ms
+ 
+ 
+ 
+ 
+Fitting toy 5000
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.81598e-05
+ 
+Fit took : 694 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.79159e-05
+parameter T_{1/2}^{-1} 2.13778e-29
+ 
+Fit took : 759 ms
+ 
+ 
+ 
+ 
+Fitting toy 5100
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 2.26998e-05
+ 
+Fit took : 515 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 2.21763e-05
+parameter T_{1/2}^{-1} 4.59306e-29
+ 
+Fit took : 696 ms
+ 
+ 
+ 
+ 
+Fitting toy 5200
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 7.56659e-06
+ 
+Fit took : 406 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 6.3543e-06
+parameter T_{1/2}^{-1} 1.06153e-28
+ 
+Fit took : 743 ms
+ 
+ 
+ 
+ 
+Fitting toy 5300
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.05932e-05
+ 
+Fit took : 651 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 9.48384e-06
+parameter T_{1/2}^{-1} 9.70236e-29
+ 
+Fit took : 930 ms
+ 
+ 
+ 
+ 
+Fitting toy 5400
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 2.11864e-05
+ 
+Fit took : 580 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 2.11864e-05
+parameter T_{1/2}^{-1} 4.996e-42
+ 
+Fit took : 673 ms
+ 
+ 
+ 
+ 
+Fitting toy 5500
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 2.26998e-05
+ 
+Fit took : 628 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 2.26984e-05
+parameter T_{1/2}^{-1} 3.44502e-39
+ 
+Fit took : 835 ms
+ 
+ 
+ 
+ 
+Fitting toy 5600
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.96731e-05
+ 
+Fit took : 551 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.88781e-05
+parameter T_{1/2}^{-1} 6.96674e-29
+ 
+Fit took : 755 ms
+ 
+ 
+ 
+ 
+Fitting toy 5700
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.81598e-05
+ 
+Fit took : 594 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.75126e-05
+parameter T_{1/2}^{-1} 5.66824e-29
+ 
+Fit took : 920 ms
+ 
+ 
+ 
+ 
+Fitting toy 5800
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.36199e-05
+ 
+Fit took : 666 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.20718e-05
+parameter T_{1/2}^{-1} 1.3565e-28
+ 
+Fit took : 847 ms
+ 
+ 
+ 
+ 
+Fitting toy 5900
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51332e-05
+ 
+Fit took : 623 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.41662e-05
+parameter T_{1/2}^{-1} 8.46902e-29
+ 
+Fit took : 925 ms
+ 
+ 
+ 
+ 
+Fitting toy 6000
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 9.07991e-06
+ 
+Fit took : 412 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 9.07971e-06
+parameter T_{1/2}^{-1} 7.03881e-40
+ 
+Fit took : 563 ms
+ 
+ 
+ 
+ 
+Fitting toy 6100
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.36199e-05
+ 
+Fit took : 558 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.36195e-05
+parameter T_{1/2}^{-1} 0
+ 
+Fit took : 642 ms
+ 
+ 
+ 
+ 
+Fitting toy 6200
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.05932e-05
+ 
+Fit took : 427 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 7.50818e-06
+parameter T_{1/2}^{-1} 2.70243e-28
+ 
+Fit took : 705 ms
+ 
+ 
+ 
+ 
+Fitting toy 6300
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.36199e-05
+ 
+Fit took : 732 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.13427e-05
+parameter T_{1/2}^{-1} 1.99483e-28
+ 
+Fit took : 622 ms
+ 
+ 
+ 
+ 
+Fitting toy 6400
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.66465e-05
+ 
+Fit took : 646 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.49149e-05
+parameter T_{1/2}^{-1} 1.51688e-28
+ 
+Fit took : 557 ms
+ 
+ 
+ 
+ 
+Fitting toy 6500
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.66465e-05
+ 
+Fit took : 557 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.59536e-05
+parameter T_{1/2}^{-1} 6.06962e-29
+ 
+Fit took : 821 ms
+ 
+ 
+ 
+ 
+Fitting toy 6600
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51332e-05
+ 
+Fit took : 494 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51329e-05
+parameter T_{1/2}^{-1} 1.28786e-40
+ 
+Fit took : 604 ms
+ 
+ 
+ 
+ 
+Fitting toy 6700
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.05932e-05
+ 
+Fit took : 583 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.05932e-05
+parameter T_{1/2}^{-1} 3.06422e-40
+ 
+Fit took : 685 ms
+ 
+ 
+ 
+ 
+Fitting toy 6800
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 7.56659e-06
+ 
+Fit took : 333 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 7.56624e-06
+parameter T_{1/2}^{-1} 1.40443e-40
+ 
+Fit took : 567 ms
+ 
+ 
+ 
+ 
+Fitting toy 6900
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.96731e-05
+ 
+Fit took : 834 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.9673e-05
+parameter T_{1/2}^{-1} 1.08802e-40
+ 
+Fit took : 752 ms
+ 
+ 
+ 
+ 
+Fitting toy 7000
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51332e-05
+ 
+Fit took : 474 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51329e-05
+parameter T_{1/2}^{-1} 1.28786e-40
+ 
+Fit took : 994 ms
+ 
+ 
+ 
+ 
+Fitting toy 7100
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51332e-05
+ 
+Fit took : 719 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51329e-05
+parameter T_{1/2}^{-1} 5.55112e-43
+ 
+Fit took : 774 ms
+ 
+ 
+ 
+ 
+Fitting toy 7200
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.21065e-05
+ 
+Fit took : 767 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.21064e-05
+parameter T_{1/2}^{-1} 4.34097e-40
+ 
+Fit took : 704 ms
+ 
+ 
+ 
+ 
+Fitting toy 7300
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.96731e-05
+ 
+Fit took : 684 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.96716e-05
+parameter T_{1/2}^{-1} 2.08065e-36
+ 
+Fit took : 847 ms
+ 
+ 
+ 
+ 
+Fitting toy 7400
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.21065e-05
+ 
+Fit took : 491 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.21047e-05
+parameter T_{1/2}^{-1} 8.71304e-37
+ 
+Fit took : 442 ms
+ 
+ 
+ 
+ 
+Fitting toy 7500
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.36199e-05
+ 
+Fit took : 690 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.36188e-05
+parameter T_{1/2}^{-1} 0
+ 
+Fit took : 792 ms
+ 
+ 
+ 
+ 
+Fitting toy 7600
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 9.07991e-06
+ 
+Fit took : 591 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 9.07971e-06
+parameter T_{1/2}^{-1} 7.03881e-40
+ 
+Fit took : 623 ms
+ 
+ 
+ 
+ 
+Fitting toy 7700
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.21065e-05
+ 
+Fit took : 485 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.21064e-05
+parameter T_{1/2}^{-1} 4.34097e-40
+ 
+Fit took : 798 ms
+ 
+ 
+ 
+ 
+Fitting toy 7800
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.36199e-05
+ 
+Fit took : 535 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.36188e-05
+parameter T_{1/2}^{-1} 3.14598e-38
+ 
+Fit took : 689 ms
+ 
+ 
+ 
+ 
+Fitting toy 7900
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51332e-05
+ 
+Fit took : 457 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.2955e-05
+parameter T_{1/2}^{-1} 1.9081e-28
+ 
+Fit took : 683 ms
+ 
+ 
+ 
+ 
+Fitting toy 8000
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 7.56659e-06
+ 
+Fit took : 454 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 7.56654e-06
+parameter T_{1/2}^{-1} 8.77076e-41
+ 
+Fit took : 646 ms
+ 
+ 
+ 
+ 
+Fitting toy 8100
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51332e-05
+ 
+Fit took : 387 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.41781e-05
+parameter T_{1/2}^{-1} 8.36215e-29
+ 
+Fit took : 737 ms
+ 
+ 
+ 
+ 
+Fitting toy 8200
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.05932e-05
+ 
+Fit took : 415 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.05932e-05
+parameter T_{1/2}^{-1} 0
+ 
+Fit took : 631 ms
+ 
+ 
+ 
+ 
+Fitting toy 8300
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 2.26998e-05
+ 
+Fit took : 576 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 2.26997e-05
+parameter T_{1/2}^{-1} 3.38618e-41
+ 
+Fit took : 950 ms
+ 
+ 
+ 
+ 
+Fitting toy 8400
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.96731e-05
+ 
+Fit took : 676 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.895e-05
+parameter T_{1/2}^{-1} 6.34019e-29
+ 
+Fit took : 871 ms
+ 
+ 
+ 
+ 
+Fitting toy 8500
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 9.07991e-06
+ 
+Fit took : 508 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 9.07971e-06
+parameter T_{1/2}^{-1} 7.03881e-40
+ 
+Fit took : 733 ms
+ 
+ 
+ 
+ 
+Fitting toy 8600
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.05932e-05
+ 
+Fit took : 483 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.0593e-05
+parameter T_{1/2}^{-1} 6.77236e-41
+ 
+Fit took : 827 ms
+ 
+ 
+ 
+ 
+Fitting toy 8700
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51332e-05
+ 
+Fit took : 510 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51331e-05
+parameter T_{1/2}^{-1} 1.79856e-40
+ 
+Fit took : 821 ms
+ 
+ 
+ 
+ 
+Fitting toy 8800
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51332e-05
+ 
+Fit took : 778 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.4417e-05
+parameter T_{1/2}^{-1} 6.26793e-29
+ 
+Fit took : 902 ms
+ 
+ 
+ 
+ 
+Fitting toy 8900
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 6.05327e-06
+ 
+Fit took : 465 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 6.05237e-06
+parameter T_{1/2}^{-1} 1.22125e-41
+ 
+Fit took : 604 ms
+ 
+ 
+ 
+ 
+Fitting toy 9000
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.21065e-05
+ 
+Fit took : 472 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.21064e-05
+parameter T_{1/2}^{-1} 4.34097e-40
+ 
+Fit took : 601 ms
+ 
+ 
+ 
+ 
+Fitting toy 9100
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 2.11864e-05
+ 
+Fit took : 543 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 2.11864e-05
+parameter T_{1/2}^{-1} 4.996e-42
+ 
+Fit took : 694 ms
+ 
+ 
+ 
+ 
+Fitting toy 9200
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.05932e-05
+ 
+Fit took : 531 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 9.45004e-06
+parameter T_{1/2}^{-1} 1.0007e-28
+ 
+Fit took : 721 ms
+ 
+ 
+ 
+ 
+Fitting toy 9300
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51332e-05
+ 
+Fit took : 732 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51329e-05
+parameter T_{1/2}^{-1} 1.28786e-40
+ 
+Fit took : 706 ms
+ 
+ 
+ 
+ 
+Fitting toy 9400
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.21065e-05
+ 
+Fit took : 514 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.21064e-05
+parameter T_{1/2}^{-1} 4.34097e-40
+ 
+Fit took : 856 ms
+ 
+ 
+ 
+ 
+Fitting toy 9500
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.66465e-05
+ 
+Fit took : 735 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.66451e-05
+parameter T_{1/2}^{-1} 2.16493e-41
+ 
+Fit took : 946 ms
+ 
+ 
+ 
+ 
+Fitting toy 9600
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51332e-05
+ 
+Fit took : 476 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51327e-05
+parameter T_{1/2}^{-1} 4.996e-42
+ 
+Fit took : 636 ms
+ 
+ 
+ 
+ 
+Fitting toy 9700
+-------------------------------------
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.51332e-05
+ 
+Fit took : 596 ms
+ 
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 1.4157e-05
+parameter T_{1/2}^{-1} 8.54093e-29
+ 
+Fit took : 1365 ms
+ 

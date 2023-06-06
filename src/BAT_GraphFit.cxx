@@ -134,10 +134,15 @@ void BAT_GraphFit::SetHisto(TH1D*&h,TString type)
 {
   fType=type;
   fTH1=h;
+  
+  //fNObs=  fTH1->Integral(fTH1->FindBin(fFitLow),fTH1->FindBin(fFitHigh));
 
- 
 }
-
+void BAT_GraphFit::SetEnergyVector(std::vector<double>vec)
+{
+  fEnergyVector=vec;
+  fNObs=vec.size();
+}
 
 
 void BAT_GraphFit::SetCountingPars(  std::vector<std::pair<double,double>>range,std::vector<double> prob)
@@ -303,8 +308,12 @@ double BAT_GraphFit::LogLikelihood(const std::vector<double>& pars)
   for (int n=0;n<fNpar;n++)
     {
       fTF1->SetParameter(n,pars[n]);
+    
+      if (fMode=="U")
+	{
+	  fTF1_int->SetParameter(n,pars[n]);
+	}
     }
-  
   /// ************ GAUSSIAN *************************
   /// ***********************************************
   if (fMode=="G")
@@ -395,6 +404,63 @@ double BAT_GraphFit::LogLikelihood(const std::vector<double>& pars)
 
 	}
     }
+
+  else if (fMode=="U")
+    {
+      //  ************ UNBINNED POISSON  *************************                                                                                                                                       
+      /// ***********************************************
+
+
+      // First the extended term
+
+      double Npred;
+      logL=0;
+
+      Npred=fTF1_int->Eval(fFitHigh);
+      
+
+
+      if (Npred>0)
+	logL+=fNObs*log(Npred)-Npred-BCMath::LogFact(fNObs);
+      else
+	{
+	  // penalty for negative model                                                                                                                                                                
+	  logL-=pow(10,8);
+	}
+
+
+      for (int i=0;i<fEnergyVector.size();i++)
+	{
+	  if (fEnergyVector[i]>fFitLow &&fEnergyVector[i]<fFitHigh)
+	    {
+	      double pred;
+	      if (fType=="C")
+		{
+		  pred=fTF1->Derivative(fEnergyVector[i]);
+		}
+	      else
+		{
+		  pred=fTF1->Eval(fEnergyVector[i]);
+		}
+
+	      pred/=Npred;
+	      if (pred>0)
+		logL+=log(pred);
+	      else
+		logL-=pow(10,8);
+	      
+	    }
+	}
+      
+      
+
+
+
+
+    }
+      
+
+      
   // **************COUNTING ANALYSIS*****************
   // ************************************************
 

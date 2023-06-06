@@ -22,8 +22,10 @@ class BatGraphFitter
   BatGraphFitter(TGraphErrors*&g,TF1 *&f); // graph fit with symmetric errors
   BatGraphFitter(TGraph *g,TGraph *&gTrial,TGraph *&gSuccess,TF1 *&f); //binomial fit
   BatGraphFitter(TH1D *&h,TF1 *&f,std::vector<std::pair<double,double>> ranges,std::vector<double>probs,double Sm=100); // counting analysis
+  BatGraphFitter(TH1D*&h,TF1*&f,TF1*&f_int,std::vector<double>energy);
 
   void SetTH1(TH1D*&h){fHisto=h;};
+  void SetVector(std::vector<double>&vec){fEnergyVector=vec;};
   
   void SetCountingPar(std::vector<std::pair<double,double>>range, std::vector<double>prob){fCountingRange=range;fCountingProb=prob;};
   void GetCredibleInterval(TGraphAsymmErrors * &grint1,TGraphAsymmErrors *&grint2,TGraphAsymmErrors *&grint3,int n,TTree *&T_markov,double ylow,double yhigh);
@@ -32,15 +34,13 @@ class BatGraphFitter
   void SetPrecison(int prec){fPrec=prec;};
   void SetGraphMaxMin(double max,double min){fMax=max; fMin=min;};
   void ResetTF1(TF1*&f);
+  void ResetTF1Int(TF1*&fi);
 
   int fPrec;
   ~BatGraphFitter()
   {
     if (fGraph!=nullptr)delete fGraph;
-    //if (fHisto!=nullptr)delete fHisto;
-    // if (fTF1!=nullptr)delete fTF1;
     if (fGraph!=nullptr)delete fGraph;
-    //    delete fModel;
   };
   double fMax,fMin;
   double fQbb;
@@ -49,6 +49,7 @@ class BatGraphFitter
   TGraphAsymmErrors *fGraph=nullptr;
   double fSmax;
   TF1  *fTF1=nullptr;
+  TF1  *fTF1Int=nullptr;
   TString fMode;
   TH1D *fHisto=nullptr;
   TGraph *fGraphBinomTrial;
@@ -59,6 +60,7 @@ class BatGraphFitter
   // outputs
   std::map<int,TH1D*> f1DPosteriors;
   std::map<int,std::map<int,TH2D*>>f2DPosteriors;
+  std::vector<double>fEnergyVector;
   
 };
 

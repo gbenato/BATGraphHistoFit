@@ -1,0 +1,75 @@
+F
+RUNNING FIT WITH RANGE: 2960 ' 3100
+***************************************************
+RUNNING FIT WITH RANGE: 2960 ' 3100
+***************************************************
+RUNNING FIT WITH RANGE: 2960 ' 3100
+***************************************************
+Making fit 0 with 0
+**************************************
+ 
+making fit to toy with INF with S+B model
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 6.22641e-05
+parameter s -1.04362e-06
+parameter n1 0.000131386
+parameter n2 0.000154216
+parameter n3 0.000255713
+parameter n4 0.001
+parameter T_{1/2}^{-1} 3.74562e-28
+ 
+Fit took : 4 ms
+ 
+ 
+making fit to toy with INF with B model
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 6.86778e-05
+parameter s -1.14139e-06
+parameter n1 0.000112979
+parameter n2 0.000139546
+parameter n3 0.000249757
+parameter n4 5.95917e-12
+ 
+Fit took : 20 ms
+ 
+ 
+making fit to toy with INF with S fixed model
+Mode is U
+                      
+Fit with BAT best fit value
+****************************************
+parameter b 6.86826e-05
+parameter s -1.14145e-06
+parameter n1 0.00011296
+parameter n2 0.000139515
+parameter n3 0.000249698
+parameter n4 1.90379e-14
+ 
+Fit took : 4 ms
+ 
+t0 = -47.1641
+maxlogL = -287.241 maxlogL(S= 0 ) = -263.659 maxlogL(S= 0 ) = -263.659
+test stat (S) = -47.1641
+t0            = -47.1641
+ 
+ 
+ 
+ +------------------------------------------------------+
+ |                                                      |
+ | BAT version 1.0.0                                    |
+ | Copyright (C) 2007-2018, the BAT core developer team |
+ | All rights reserved.                                 |
+ |                                                      |
+ | For the licensing terms see doc/COPYING              |
+ | For documentation see http://mpp.mpg.de/bat          |
+ | Please cite: DOI 10.1016/j.cpc.2009.06.026           |
+ |              http://arxiv.org/abs/0808.2552          |
+ |                                                      |
+ +------------------------------------------------------+
+

@@ -29,10 +29,12 @@ class BAT_GraphFit : public BCModel
 public:
 
   TF1 *fTF1=nullptr;
+  TF1 *fTF1_int=nullptr;
   TGraphAsymmErrors *fGraph=nullptr;
   TGraph *fGraphBinomTrial;
   TGraph *fGraphBinomSuccess;
   TH1D *fTH1=nullptr;
+  std::vector<double>fEnergyVector;
   int fNpar;
   double fFitLow,fFitHigh;
   double fGraphMinimum,fGraphMaximum;
@@ -40,7 +42,7 @@ public:
   bool fVerbose;
   double fMinObs=0;
   double fMaxObs=1.5;
-  
+  double fNObs=0;
   // Constructor
   void SetTF1(TF1*&f,bool addpars=1)
   {
@@ -52,6 +54,10 @@ public:
       this->AddParameters();
     
   };
+  void SetTF1Int(TF1*&fi)
+  {
+    fTF1_int=fi;
+  }
 
   void AddParameters();
   
@@ -60,6 +66,8 @@ public:
   void SetObsRange(double mi,double ma){fMinObs=mi; fMaxObs=ma;};
   void SetGraph(TGraphAsymmErrors *&g,double max=pow(10,5),double min=-pow(10,5));
   void SetHisto(TH1D*&h,TString type="P");
+  void SetEnergyVector(std::vector<double>vec);
+
   void SetBinomGraph(TGraph *&gTrial,TGraph *&gSuccess);
   void PlotCI(TGraphAsymmErrors *g1,TGraphAsymmErrors *g2,TGraphAsymmErrors *g3);
   void SetCountingPars(  std::vector<std::pair<double,double>>range,std::vector<double> prob);

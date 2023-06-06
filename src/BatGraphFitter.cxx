@@ -13,8 +13,13 @@ void BatGraphFitter::ResetTF1(TF1*&f)
 {
   fModel->SetTF1(f,0);
 }
+void BatGraphFitter::ResetTF1Int(TF1*&fi)
+{
+  fModel->SetTF1Int(fi);
+}
 BatGraphFitter::BatGraphFitter(TGraphAsymmErrors *&g,TF1 *&f)
 {
+  
   // constructor
   // in the constructor we need to create the
   //gaussian likelihood
@@ -26,6 +31,7 @@ BatGraphFitter::BatGraphFitter(TGraphAsymmErrors *&g,TF1 *&f)
   fMin=-pow(10,9);
   fMax=pow(10,9);
 }
+
 BatGraphFitter::BatGraphFitter(TH1D*&h,TF1*&f)
 {
   fMode="P";
@@ -37,13 +43,28 @@ BatGraphFitter::BatGraphFitter(TH1D*&h,TF1*&f)
 
 }
 
+BatGraphFitter::BatGraphFitter(TH1D*&h,TF1*&f,TF1 *&f_int,std::vector<double>energy)
+{
+  // Unbinned fit
+  fMode="U";
+  fHisto=h;
+  fTF1=f;
+  fTF1Int=f_int;
+  fEnergyVector=energy;
+  fModel= new BAT_GraphFit("fit",f,1,fMode,fQbb);
+  fModel->SetTF1Int(f_int);
+  
+  this->SetPrecison(2);
+
+}
+
 
 BatGraphFitter::BatGraphFitter(TH1D *&h,TF1*&f,std::vector<std::pair<double,double>>ranges,std::vector<double>probs,double Sm)
 {
   fMode="C";
   fHisto=h;
   fTF1=f;
-  fModel= new BAT_GraphFit("fit",f,1,fMode);
+  fModel= new BAT_GraphFit("fit",f,1,fMode,Sm);
 	
   fSmax=Sm;
   this->SetCountingPar(ranges,probs);
@@ -172,10 +193,14 @@ void BatGraphFitter::Fit(TString option,TString goption,double low,double high,b
 
       fModel->SetGraph(fGraph,fMax,fMin);
     }
-  else if(fMode=="P")
+  else if(fMode=="P"||fMode=="U")
     {
       fHisto->GetXaxis()->SetRangeUser(low-10,high+10);
       fModel->SetHisto(fHisto,type);
+      if (fMode=="U")
+	{
+	  fModel->SetEnergyVector(fEnergyVector);
+	}
     }
   else if (fMode=="B")
     {
@@ -205,7 +230,7 @@ void BatGraphFitter::Fit(TString option,TString goption,double low,double high,b
     {
       fModel->SetPrecision(BCEngineMCMC::kHigh);
     }
-  else if(fPrec==4)
+  else if(fPrec>4)
     {
       fModel->SetPrecision(BCEngineMCMC::kVeryHigh);
     }
@@ -252,7 +277,6 @@ void BatGraphFitter::Fit(TString option,TString goption,double low,double high,b
       TGraphAsymmErrors *g2=new	TGraphAsymmErrors(n);
       TGraphAsymmErrors *g3=new	TGraphAsymmErrors(n);
       TTree *T=(TTree*)fModel->GetMarkovChainTree();
-      T->Print();
       this->GetCredibleInterval(g1,g2,g3,n,T,fMin,fMax);
 
       for (int i=0;i<fModel->GetBestFitParameters().size(); i++)
@@ -307,7 +331,6 @@ void BatGraphFitter::GetCredibleInterval(TGraphAsymmErrors * &grint1,TGraphAsymm
     {
       
       BCParameter  parameter = fModel->GetParameter(i);
-      std::cout<<parameter.GetName().data()<<std::endl;
       T_markov->SetBranchAddress(parameter.GetName().data(),&pars[i]);
     }
   T_markov->SetBranchAddress("Phase",&pass);
@@ -318,14 +341,13 @@ void BatGraphFitter::GetCredibleInterval(TGraphAsymmErrors * &grint1,TGraphAsymm
   std::vector<TH1D*> histos;
   for (int i=0;i<n;i++)histos.push_back(new TH1D(Form("h%i",i),Form("%i",i),10000,ylow,yhigh));
 
-  for (long int i=0;i<T_markov->GetEntries();i++)
+  for (long int i=0;i<T_markov->GetEntries()/10.;i++)
     {
       T_markov->GetEntry(i);
-      if (i%10000000==0)
+      if (i%1000000==0)
 	{
-	  std::cout<<100*i/(double)T_markov->GetEntries()<<" %"<<std::endl;
+	  std::cout<<100*double(i)/((double)T_markov->GetEntries())<<" %"<<std::endl;
 
-	  std::cout<<pass<<std::endl;
 	}
       
       if (pass!=1){continue;}

@@ -34,6 +34,7 @@ void GetCI(TH1D *&h)
   std::cout<<q<<std::endl;
   double qdown=q-0.683/2.;
   double qup=q+0.683/2.;
+  std::cout<<qdown<<" "<<qup<<std::endl;
   if (qdown<0)
     {
       q=0.9;
@@ -142,7 +143,7 @@ int main(int argc, char **argv)
 
   
   int ds=3602;
-  TString bias_function="[0]*[0]+[1]*x+[2]*x*x";
+  TString bias_function="pol2";
   TString reso_function="sqrt([0]*[0]+[1]*x)";
   TString path="inputs/reso/fitresults";
   TString out_path = Form("output/CUORE_reso/");
@@ -184,7 +185,11 @@ int main(int argc, char **argv)
       reso_function = optarg;
       break;
     }
-      
+
+    case 'd':{
+      ds=atoi(optarg);
+      break;
+    }
     case 'b': {
       bias_function = optarg;
       break;
@@ -218,7 +223,7 @@ int main(int argc, char **argv)
     
     std::vector<LineShapeResults> input = ReadInputText2Map(Form("%s_ds%i.dat",path.Data(),ds));
     
-
+    out_path+=Form("/ds%i",ds);
     // create graphs
     
     TGraphErrors * gerror_bias = new TGraphErrors();
@@ -265,6 +270,8 @@ int main(int argc, char **argv)
     fitter_bias->SetPrecison(4);
     fitter_bias->SetQbb(Qbb);
     fitter_bias->SetGraphMaxMin(20,-20);  
+    fitter_bias->fModel->WriteMarkovChain(Form("%s/output_bias_%s_mcmc.root",out_path.Data(),label.Data()), "RECREATE");
+
     fitter_bias->Fit();
     gerror_bias->SetTitle(Form("Fit to energy bias for ds %i ; Energy Nominal [keV] ; Energy Fit - Energy Nominal [keV] ;",ds));
 
@@ -284,8 +291,8 @@ int main(int argc, char **argv)
     ce->Print(Form("%s/bias_%s.pdf)",out_path.Data(),label.Data()),"pdf");
     fitter_bias->fModel->PrintAllMarginalized(Form("%s/bias_fit_%s.pdf",out_path.Data(),label.Data()));
     fitter_bias->fModel->WriteMarginalizedDistributions(Form("%s/output_bias_%s.root",out_path.Data(),label.Data()), "RECREATE");
-    
 
+    
     // SAME FOR RESO
     // --------------------------------------------------------
 
@@ -296,6 +303,8 @@ int main(int argc, char **argv)
     fitter_reso->SetPrecison(4);
     fitter_reso->SetQbb(Qbb);
     fitter_reso->SetGraphMaxMin(2,0);
+    fitter_reso->fModel->WriteMarkovChain(Form("%s/output_reso_%s_mcmc.root",out_path.Data(),label.Data()), "RECREATE");
+
     fitter_reso->Fit();
     gerror_reso->SetTitle(Form("Fit to energy resolution scaling for ds %i ; Energy Nominal [keV] ; Scaling [] ;",ds));
 
@@ -314,6 +323,7 @@ int main(int argc, char **argv)
     ce->Print(Form("%s/reso_%s.pdf)",out_path.Data(),label.Data()),"pdf");
     fitter_reso->fModel->PrintAllMarginalized(Form("%s/reso_fit_%s.pdf",out_path.Data(),label.Data()));
     fitter_reso->fModel->WriteMarginalizedDistributions(Form("%s/output_reso_%s.root",out_path.Data(),label.Data()), "RECREATE");
+    fitter_reso->fModel->WriteMarkovChain(Form("%s/output_reso_%s_mcmc.root",out_path.Data(),label.Data()), "RECREATE");
 
   
 

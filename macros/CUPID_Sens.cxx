@@ -7,7 +7,7 @@
 #include "TApplication.h"
 #include "TRandom3.h"
 #include "TLatex.h"
-
+#include <getopt.h>
 
 // Method to get the integral assuming                                                                                                                                                                    //-------------------------------------------------------                                                                                                                                                  
 
@@ -124,7 +124,7 @@ TGraphErrors *profile(TH2D* &h,TString axis,double logLL)
 
 
 
-double  GenToy(TH1D*&h,TRandom3 *&rand,double Nb,double Elow,double Ehigh,double Ns,double Q,double dE)
+double  GenToy(TH1D*&h,std::vector<double>&vec,TRandom3 *&rand,double Nb,double Elow,double Ehigh,double Ns,double Q,double dE)
 {
   // generate a toy given a certain number of background counts (on avg) in range [Nb,Ns] and a certain number of signal counts at energy Q with resolution dE (sigma)
   
@@ -132,20 +132,45 @@ double  GenToy(TH1D*&h,TRandom3 *&rand,double Nb,double Elow,double Ehigh,double
   double Na=rand->Poisson(Ns);
   for (int i=1;i<h->GetNbinsX()+1;i++)
     h->SetBinContent(i,0);
-
+  vec.clear();
   for (int i=0;i<N;i++)
     {
-      h->Fill(rand->Uniform(100)+Elow);
+      double E=rand->Uniform(Ehigh-Elow)+Elow;
+  
+      h->Fill(E);
+      vec.push_back(E);
    }
   for (int i=0;i<Na;i++)
     {
       double E=rand->Gaus(Q,dE);
       h->Fill(E);
-      
+      vec.push_back(E);
     }
   return Na;
 }
+double GenFancyToy(TH1D*&h,std::vector<double>&vec,TRandom3*&rand,TF1 *&fb,double Elow,double Ehigh,double Ns,double Q,double dE)
+{
+  int N = fb->Integral(Elow,Ehigh);
 
+  double Na=rand->Poisson(Ns);
+  vec.clear();
+  for (int i=1;i<h->GetNbinsX()+1;i++)
+    h->SetBinContent(i,0);
+  
+  for (int i=0;i<N;i++)
+    {
+      double E=fb->GetRandom(Elow,Ehigh);
+      h->Fill(E);
+      vec.push_back(E);
+    }
+  for (int i=0;i<Na;i++)
+    {
+      double E=rand->Gaus(Q,dE);
+      h->Fill(E);
+      vec.push_back(E);
+    }
+  return Na;
+}
 
 double scale_2_rate(double eff,double m,double eta,double W)
 {
@@ -278,12 +303,11 @@ void CreatePValuePlot(std::vector<TH1D*>p_value,std::vector<TH1D*>test_stat,std:
 
 }
 
-int FreqLimit()
+void FreqLimit(double bkg,TString name,bool fancy,double maxR,int Nsignals,int Ntoys)
 {
   // SET THE PARAMETERS
   // -----------------------------------------------------------------------------------------------------------------------------------------
   
-  TString name="reach_frequentist";
   double Qbb=3034.4;
   double eff=0.9*0.79;
   double dE = 5/2.355;
@@ -291,9 +315,35 @@ int FreqLimit()
   double m = 472;
   double eta=0.95;
   double W=177.7;
-  double b=2e-5;
+  double b=bkg;
+  double slope=-6e-7;
+  double Elow=2960;
+  double Ehigh=3100;
+  double minR=-0.5*maxR;
+  
+  std::vector<double>peaks{2978.9,3000.0,3053.9,3081.8};
+  std::vector<double>norm{21e-5,9.4e-5,27.4e-5,6.1e-5};
 
- 
+  // Build the background prediction
+  //------------------------------------------------------------------------------------------------------------------------------------------
+
+  TF1 *fb = new TF1("fb","[0]*([1]+(x-3034.4)*[2]+[3]*TMath::Gaus(x,[4],[5]/2.355)+[6]*TMath::Gaus(x,[7],[5]/2.355)+[8]*TMath::Gaus(x,[9],[5]/2.355)+[10]*TMath::Gaus(x,[11],[5]/2.355))",Elow,Ehigh);
+
+  fb->SetParameter(0,m*T);
+  fb->SetParameter(1,b);
+  fb->SetParameter(2,slope);
+  fb->SetParameter(5,5);
+  fb->SetParameter(3,norm[0]);
+  fb->SetParameter(4,peaks[0]);
+  fb->SetParameter(6,norm[1]);
+  fb->SetParameter(7,peaks[1]);
+  fb->SetParameter(8,norm[2]);
+  fb->SetParameter(9,peaks[2]);
+  fb->SetParameter(10,norm[3]);
+  fb->SetParameter(11,peaks[3]);
+
+  
+  fb->SetNpx(1000);
 
   // Create some objects
   //------------------------------------------------------------------------------------------------------------------------------------------
@@ -301,27 +351,102 @@ int FreqLimit()
   TCanvas *can = new TCanvas();
   can->Print(Form("output/CUPID_sens_%s/toys_0_sig.pdf(",name.Data()),"pdf");
   gStyle->SetOptStat(0);
-  TH1D * h = new TH1D("h","h",100,2984,3084);
-  double scale = T*log(2)*m*eff*eta*6.066e26/(W);
+  TH1D * h = new TH1D("h","h",Ehigh-Elow,Elow,Ehigh);
 
+  double scale = T*log(2)*m*eff*eta*6.066e26/(W);
+  std::vector<double>vec;
   double Nb=100*b*m*T;
 
 
   // CREATE FIT FUNCTIONS
   //-------------------------------------------------------------------------------------------------------------------------------------------
-  
-  TF1 *fit = new TF1("f",Form("[0]*%f+(%f*[1])*TMath::Gaus(x,%f,%f)/(sqrt(2*TMath::Pi())*%f)",m*T,scale,Qbb,dE,dE),2984,3084);
-  TF1 *fit_fix = new TF1("fit_fix",Form("[0]*%f+%f*TMath::Gaus(x,%f,%f)/(sqrt(2*TMath::Pi())*%f)",m*T,0.,Qbb,dE,dE),2984,3084);
-  TF1 *fit_bk_only = new TF1("fbk",Form("[0]*%f",m*T),2984,3084);
-  
-  fit->SetParLimits(0,0,1e-3);
-  fit->SetParLimits(1,-0.5e-26,1e-25);
-  fit_fix->SetParLimits(0,0,2e-3);
-  fit->SetParNames("b","T_{1/2}");
-  fit_fix->SetParNames("b");
-  fit_bk_only->SetParNames("b");
-  fit_bk_only->SetParLimits(0,0,2e-3);
+  TF1 *fit;
+  TF1 *fit_fix;
+  TF1 *fit_bk_only;
 
+  TF1 *fit_int;
+  TF1 *fit_fix_int;
+  TF1 *fit_bk_only_int;
+
+  
+  int Rpar;
+  if (!fancy)
+    {
+      fit = new TF1("f",Form("[0]*%f+(%f*[1])*TMath::Gaus(x,%f,%f)/(sqrt(2*TMath::Pi())*%f)",m*T,scale,Qbb,dE,dE),Elow,Ehigh);
+      fit_int =new TF1("f_int",Form("[0]*%f+%f*[1]",m*T*(Ehigh-Elow),scale),Elow,Ehigh);
+    
+      fit_fix = new TF1("fit_fix",Form("[0]*%f+%f*TMath::Gaus(x,%f,%f)/(sqrt(2*TMath::Pi())*%f)",m*T,0.,Qbb,dE,dE),Elow,Ehigh);
+      fit_fix_int = new TF1("fit_fix_int",Form("[0]*%f+%f",m*T*(Ehigh-Elow),0.),Elow,Ehigh);
+      
+      
+      fit_bk_only = new TF1("fbk",Form("[0]*%f",m*T),Elow,Ehigh);
+      fit_bk_only_int = new TF1("fbk_int",Form("[0]*%f",m*T*(Ehigh-Elow)),Elow,Ehigh);
+
+      fit->SetParLimits(0,0,1e-3);
+      fit->SetParLimits(1,minR,2*maxR);
+      fit_fix->SetParLimits(0,0,2e-3);
+      fit->SetParNames("b","T_{1/2}^{-1}");
+      fit_fix->SetParNames("b");
+      fit_bk_only->SetParNames("b");
+      fit_bk_only->SetParLimits(0,0,2e-3);
+      Rpar=1;
+    }
+  else
+    {
+
+      
+      fit = new TF1("f",Form("%f*([0]+(x-3034.4)*[1]+[2]*TMath::Gaus(x,%f,%f)+[3]*TMath::Gaus(x,%f,%f)+[4]*TMath::Gaus(x,%f,%f)+[5]*TMath::Gaus(x,%f,%f))+(%f*[6])*TMath::Gaus(x,%f,%f)/(sqrt(2*TMath::Pi())*%f)",
+			     m*T,peaks[0],dE,peaks[1],dE,peaks[2],dE,peaks[3],dE,scale,Qbb,dE,dE),Elow,Ehigh);
+
+      fit_int = new TF1("fit_int",Form("%f*([0]*%f+[2]*sqrt(2*TMath::Pi())*%f+[3]*sqrt(2*TMath::Pi())*%f+[4]*sqrt(2*TMath::Pi())*%f+[5]*sqrt(2*TMath::Pi())*%f)+(%f*[6])",
+				       m*T,Ehigh-Elow,dE,dE,dE,dE,scale),Elow,Ehigh);
+
+      
+      fit_fix = new TF1("fit_fix",Form("%f*([0]+(x-3034.4)*[1]+[2]*TMath::Gaus(x,%f,%f)+[3]*TMath::Gaus(x,%f,%f)+[4]*TMath::Gaus(x,%f,%f)+[5]*TMath::Gaus(x,%f,%f))+%f*TMath::Gaus(x,%f,%f)/(sqrt(2*TMath::Pi())*%f)",
+				       m*T,peaks[0],dE,peaks[1],dE,peaks[2],dE,peaks[3],dE,0.,Qbb,dE,dE),
+			Elow,Ehigh);
+
+      fit_fix_int = new TF1("fit_fix_int",Form("%f*([0]*%f+[2]*sqrt(2*TMath::Pi())*%f+[3]*sqrt(2*TMath::Pi())*%f+[4]*sqrt(2*TMath::Pi())*%f+[5]*sqrt(2*TMath::Pi())*%f)+%f",
+					       m*T,Ehigh-Elow,dE,dE,dE,dE,0.),
+                        Elow,Ehigh);
+
+
+
+      
+      fit_bk_only = new TF1("fbk",Form("%f*([0]+(x-3034.4)*[1]+[2]*TMath::Gaus(x,%f,%f)+[3]*TMath::Gaus(x,%f,%f)+[4]*TMath::Gaus(x,%f,%f)+[5]*TMath::Gaus(x,%f,%f))",
+				       m*T,peaks[0],dE,peaks[1],dE,peaks[2],dE,peaks[3],dE),
+			    Elow,Ehigh);
+      
+       fit_bk_only_int = new TF1("fbk_int",Form("%f*([0]*%f+[2]*sqrt(2*TMath::Pi())*%f+[3]*sqrt(2*TMath::Pi())*%f+[4]*sqrt(2*TMath::Pi())*%f+[5]*sqrt(2*TMath::Pi())*%f)",
+						m*T,Ehigh-Elow,dE,dE,dE,dE),
+                            Elow,Ehigh);
+
+      fit->SetParLimits(0,0,1e-3);
+      fit->SetParLimits(1,-1e-5,1e-5);
+      fit->SetParLimits(2,0,10e-4);
+      fit->SetParLimits(3,0,10e-4);
+      fit->SetParLimits(4,0,10e-4);
+      fit->SetParLimits(5,0,10e-4);
+      fit->SetParLimits(6,minR,2*maxR);
+      
+      fit_fix->SetParLimits(0,0,1e-3);
+      fit_fix->SetParLimits(1,-1e-5,1e-5);
+      fit_fix->SetParLimits(2,0,10e-4);
+      fit_fix->SetParLimits(3,0,10e-4);
+      fit_fix->SetParLimits(4,0,10e-4);
+      fit_fix->SetParLimits(5,0,10e-4);
+      fit->SetParNames("b","s","n1","n2","n3","n4","T_{1/2}^{-1}");
+      fit_fix->SetParNames("b","s","n1","n2","n3","n4");
+      fit_bk_only->SetParNames("b","s","n1","n2","n3","n4");
+
+      fit_bk_only->SetParLimits(0,0,1e-3);
+      fit_bk_only->SetParLimits(1,-1e-5,1e-5);
+      fit_bk_only->SetParLimits(2,0,5e-4);
+      fit_bk_only->SetParLimits(3,0,5e-4);
+      fit_bk_only->SetParLimits(4,0,5e-4);
+      fit_bk_only->SetParLimits(5,0,5e-4);
+      Rpar=6;
+    }
 
 
   // Some parameters
@@ -331,16 +456,27 @@ int FreqLimit()
   double Nhigh=6.588;
 
   can->Print(Form("output/CUPID_sens_%s/toys_0_sig.pdf(",name.Data()),"pdf");
-  GenToy(h,rand,Nb,2984,3084,0,3034.4,dE);
 
-  double maxr=2.5e-27;
+
+
+  if (!fancy)
+    GenToy(h,vec,rand,Nb,Elow,Ehigh,0,3034.4,dE);
+  else
+    GenFancyToy(h,vec,rand,fb,Elow,Ehigh,0,3034.4,dE);
+
+  h->Draw();
+  fb->Draw("Csame");
+  can->Draw();
+  can->Print(Form("output/CUPID_sens_%s/toys_0_sig.pdf)",name.Data()),"pdf");
+
+  
 
   gErrorIgnoreLevel=kFatal;
 
   // make the fitter                                                                                                                                                                                        //------------------------------------------------------------
-  BatGraphFitter *fitter2= new BatGraphFitter(h,fit);
-  BatGraphFitter *fitterbkg= new BatGraphFitter(h,fit_fix);
-  BatGraphFitter *fitterbkg2= new BatGraphFitter(h,fit_bk_only);
+  BatGraphFitter *fitter2= new BatGraphFitter(h,fit,fit_int,vec);
+  BatGraphFitter *fitterbkg= new BatGraphFitter(h,fit_fix,fit_fix_int,vec);
+  BatGraphFitter *fitterbkg2= new BatGraphFitter(h,fit_bk_only,fit_bk_only_int,vec);
 
 
   // CONTAINERS FOR OUTPUT
@@ -365,11 +501,13 @@ int FreqLimit()
   // Loop over the toys                                                                                                                                                                                   
   //-----------------------------------------------------------------------------------------
   TH1D *ht0 = new TH1D(Form("ht0"),Form("ht0"),101000,-1,150);
+  TF1 *fChiq =new TF1("fChiq","[0]*TMath::Prob(x,1)",.0001,150);
 
-  // Parameters
-  int Nsignals=100;
-  int Ntoys=200000;
+    
+  double bin_width_t0=151/101000;
 
+  fChiq->SetParameter(0,bin_width_t0*Ntoys);
+  
   TGraph *gsens=new TGraph();
   TGraph *ginvsens=new TGraph();
   
@@ -389,7 +527,7 @@ int FreqLimit()
       TH1D *ht_fit_0 = new TH1D(Form("ht%i_fit0",j),Form("ht%i_fit0",j),101000,-1,150);
       TH1D *ht0n = new TH1D(Form("ht0n"),Form("ht0n"),101000,-1,150);
 
-      double invT12=(j/(double)Nsignals)*maxr;
+      double invT12=(j/(double)Nsignals)*maxR;
       TH1D *hp = new TH1D(Form("hp%i",j),Form("hp%i",j),10000,0,1);
       TH1D *hpb = new TH1D(Form("hpb%i",j),Form("hpb%i",j),10000,0,1);
       
@@ -422,7 +560,16 @@ int FreqLimit()
 	  
 	  double Ns,Nin;
 	  Ns=scale*invT12;
-	  Nin=GenToy(h,rand,Nb,2984,3084,Ns,3034.4,dE);
+	  
+	  
+	  if (!fancy)
+	    GenToy(h,vec,rand,Nb,Elow,Ehigh,Ns,3034.4,dE);
+	  else
+	    GenFancyToy(h,vec,rand,fb,Elow,Ehigh,Ns,3034.4,dE);
+	  if (!quiet)
+	    {
+	      std::cout<<"N events = "<<vec.size()<<" histo int = "<<h->Integral()<<std::endl;
+	    }
 	  h->SetTitle(Form("toy %i T_{1/2}=%E ; Energy [keV] ; counts/0.1 keV ; ",i,invT12));
 	  h->Draw("E");
 
@@ -431,6 +578,7 @@ int FreqLimit()
 	  // Fit with S+B model
 	  //-----------------------------------
 	  fitter2->SetTH1(h);
+	  fitter2->SetVector(vec);
 	  fitter2->fModel->SetNChains(2);
 	  fitter2->SetPrecison(1);
 
@@ -439,7 +587,7 @@ int FreqLimit()
 	      std::cout<<" "<<std::endl;
 	      std::cout<<"making fit to toy with "<<Form("%E",double(1/invT12))<<" with S+B model"<<std::endl;
 	    }
-	  fitter2->Fit(" "," ",2984,3084,0,quiet);
+	  fitter2->Fit(" "," ",Elow,Ehigh,0,quiet);
 
 	  std::vector<double>modes =fitter2->fModel->GetBestFitParameters();
 	  double logLL=fitter2->fModel->LogLikelihood(modes);
@@ -447,6 +595,8 @@ int FreqLimit()
 	  // fit with 0 signal                                                                                                                                                                                      //---------------------------------                                                                                                                                                              
 
           fitterbkg2->SetTH1(h);
+	  fitterbkg2->SetVector(vec);
+	  
           fitterbkg2->fModel->SetNChains(2);
           fitterbkg2->SetPrecison(1);
           if (!quiet)
@@ -455,12 +605,12 @@ int FreqLimit()
               std::cout<<"making fit to toy with "<<Form("%E",1/invT12)<<" with B model"<<std::endl;
             }
 
-          fitterbkg2->Fit(" "," ",2984,3084,0,quiet);
+          fitterbkg2->Fit(" "," ",Elow,Ehigh,0,quiet);
           std::vector<double>modes_fix2 =fitterbkg2->fModel->GetBestFitParameters();
 	  double logLL_0=fitterbkg2->fModel->LogLikelihood(modes_fix2);
 
 
-	  if (modes[1]<0)
+	  if (modes[Rpar]<0)
 	    {
 	      logLL=logLL_0;
 	    }
@@ -468,12 +618,45 @@ int FreqLimit()
 
 	  // Fit fixing signal
 	  //-----------------------------------
-	  
-	  TF1 * fit2_fix = new TF1("fit2_fix",Form("[0]*%f+(%f)*TMath::Gaus(x,%f,%f)/(sqrt(2*TMath::Pi())*%f)",m*T,scale*invT12,Qbb,dE,dE),2984,3084);
-	  fit2_fix->SetParLimits(0,0,1e-3);
-	  fit2_fix->SetParNames("b");
+
+	  TF1 *fit2_fix;
+	  TF1 *fit2_fix_int;
+	  if (fancy==0)
+	    {
+	      fit2_fix = new TF1("fit2_fix",Form("[0]*%f+(%f)*TMath::Gaus(x,%f,%f)/(sqrt(2*TMath::Pi())*%f)",m*T,scale*invT12,Qbb,dE,dE),Elow,Ehigh);
+	      fit2_fix_int = new TF1("fit2_fix_int",Form("[0]*%f+(%f)",m*T*(Ehigh-Elow),scale*invT12),Elow,Ehigh);
+	      
+	      fit2_fix->SetParLimits(0,0,1e-3);
+	      fit2_fix->SetParNames("b");
+	    }
+	  else
+	    {
+	      fit2_fix = new TF1("fit2_fix",Form("%f*([0]+(x-3034.4)*[1]+[2]*TMath::Gaus(x,%f,%f)+[3]*TMath::Gaus(x,%f,%f)+[4]*TMath::Gaus(x,%f,%f)+[5]*TMath::Gaus(x,%f,%f))+%f*TMath::Gaus(x,%f,%f)/(sqrt(2*TMath::Pi())*%f)",
+						m*T,peaks[0],dE,peaks[1],dE,peaks[2],dE,peaks[3],dE,scale*invT12,Qbb,dE,dE),
+
+				 Elow,Ehigh);
+
+	      fit2_fix_int = new TF1("fit2_fix_int",Form("%f*(%f*[0]+[2]*(sqrt(2*TMath::Pi())*%f)+[3]*(sqrt(2*TMath::Pi())*%f)+[4]*(sqrt(2*TMath::Pi())*%f)+[5]*(sqrt(2*TMath::Pi())*%f))+%f",
+							 m*T,Ehigh-Elow,dE,dE,dE,dE,scale*invT12),
+
+                                 Elow,Ehigh);
+
+	      fit2_fix->SetParLimits(0,0,1e-3);
+	      fit2_fix->SetParLimits(1,-1e-5,1e-5);
+	      fit2_fix->SetParLimits(2,0,10e-4);
+	      fit2_fix->SetParLimits(3,0,10e-4);
+	      fit2_fix->SetParLimits(4,0,10e-4);
+	      fit2_fix->SetParLimits(5,0,10e-4);
+	      fit2_fix->SetParNames("b","s","n1","n2","n3","n4");
+	    }
+
+
+
+
 	  fitterbkg->ResetTF1(fit2_fix);
+	  fitterbkg->ResetTF1Int(fit2_fix_int);
 	  fitterbkg->SetTH1(h);
+	  fitterbkg->SetVector(vec);
 	  fitterbkg->fModel->SetNChains(2);
           fitterbkg->SetPrecison(1);
 	  if (!quiet)
@@ -482,7 +665,7 @@ int FreqLimit()
               std::cout<<"making fit to toy with "<<Form("%E",1/invT12)<<" with S fixed model"<<std::endl;
             }
 
-          fitterbkg->Fit(" "," ",2984,3084,0,quiet);
+          fitterbkg->Fit(" "," ",Elow,Ehigh,0,quiet);
 
 
 
@@ -562,15 +745,15 @@ int FreqLimit()
 	  if (!quiet)
 	    {
 	      h->Draw();
-	      fit->SetParameters(modes[0],modes[1]);
 	      fit->Draw("Csame");
-	      fit2_fix->SetParameter(0,modes_fix[0]);
+	      can->Draw();
+	      can->SaveAs(Form("output/CUPID_sens_%s/toys_%i_%i_sig.C",name.Data(),i,j));
 	      fit2_fix->SetLineColor(3);
 	      fit2_fix->Draw("Csame");
-	      fit_bk_only->SetParameter(0,modes_fix2[0]);
 	      fit_bk_only->SetLineColor(4);
 	      fit_bk_only->Draw("Csame");
 	      can->Draw();
+	      
 	      can->Print(Form("output/CUPID_sens_%s/toys_0_sig.pdf",name.Data()),"pdf");
 	    }
 	  
@@ -581,8 +764,10 @@ int FreqLimit()
 
       // save more plots
       // ------------------------------------------------------------------------------------------------------------------------
+
       
       ht->SetTitle(Form("Distribution of test statistic for T_{1/2}  =  %E yr ; -2log(L(S)/max(L)) ; counts",1/invT12));
+      fChiq->Draw("same");
       ht->Draw();
       can->Draw();
       can->Print(Form("output/CUPID_sens_%s/test_stat_%i.pdf",name.Data(),j));
@@ -632,7 +817,12 @@ int FreqLimit()
       
       double Ns,Nin;
       Ns=0;
-      Nin=GenToy(h,rand,Nb,2984,3084,Ns,3034.4,dE);
+
+      if (!fancy)
+	Nin=GenToy(h,vec,rand,Nb,Elow,Ehigh,Ns,3034.4,dE);
+      else
+	Nin=GenFancyToy(h,vec,rand,fb,Elow,Ehigh,Ns,3034.4,dE);
+
       h->SetTitle(Form("toy %i  ; Energy [keV] ; counts/0.1 keV ; ",i));
       h->Draw("E");
 
@@ -641,6 +831,7 @@ int FreqLimit()
       // ------------------------------------------------------------
       
       fitter2->SetTH1(h);
+      fitter2->SetVector(vec);
       fitter2->fModel->SetNChains(2);
       fitter2->SetPrecison(1);
       if (!quiet)
@@ -648,7 +839,7 @@ int FreqLimit()
 	  std::cout<<"making fit to toy with 0 signal to S+B model"<<std::endl;
 	}
 
-      fitter2->Fit(" "," ",2984,3084,0,quiet);
+      fitter2->Fit(" "," ",Elow,Ehigh,0,quiet);
       std::vector<double>modes =fitter2->fModel->GetBestFitParameters();
       double logLL=fitter2->fModel->LogLikelihood(modes);
       bool foundsens=0;
@@ -660,7 +851,7 @@ int FreqLimit()
       for (int j=0;j<Nsignals;j++)
 	{
 
-	  double invT12=(j/(double)Nsignals)*maxr;
+	  double invT12=(j/(double)Nsignals)*maxR;
 
 
 	  if (!quiet)
@@ -671,10 +862,40 @@ int FreqLimit()
 
 	  // create fit function + fit
 	  // ------------------------------------------------------------
+
 	  
-	  TF1 *fit3_fix = new TF1("fit3_fix",Form("[0]*%f+(%f)*TMath::Gaus(x,%f,%f)/(sqrt(2*TMath::Pi())*%f)",m*T,scale*invT12,Qbb,dE,dE),2984,3084);
-          fitterbkg->ResetTF1(fit3_fix);
-          fitterbkg->SetTH1(h);
+	  TF1 *fit3_fix;
+	  TF1 *fit3_fix_int;
+	  if (fancy==0)
+            {
+              fit3_fix = new TF1("fit3_fix",Form("[0]*%f+(%f)*TMath::Gaus(x,%f,%f)/(sqrt(2*TMath::Pi())*%f)",m*T,scale*invT12,Qbb,dE,dE),Elow,Ehigh);
+	      fit3_fix_int = new TF1("fit3_fix_int",Form("[0]*%f+(%f)",m*T*(Ehigh-Elow),scale*invT12),Elow,Ehigh);
+
+	      fit3_fix->SetParLimits(0,0,1e-3);
+              fit3_fix->SetParNames("b");
+            }
+          else
+            {
+              fit3_fix = new TF1("fit3_fix",Form("%f*([0]+(x-3034.4)*[1]+[2]*TMath::Gaus(x,%f,%f)+[3]*TMath::Gaus(x,%f,%f)+[4]*TMath::Gaus(x,%f,%f)+[5]*TMath::Gaus(x,%f,%f))+%f*TMath::Gaus(x,%f,%f)/(sqrt(2*TMath::Pi())*%f)",
+                                                m*T,peaks[0],dE,peaks[1],dE,peaks[2],dE,peaks[3],dE,scale*invT12,Qbb,dE,dE),
+                                 Elow,Ehigh);
+	      fit3_fix_int = new TF1("fit3_fix_int",Form("%f*(%f*[0]*[2]*(sqrt(2*TMath::Pi())*%f)+[3]*(sqrt(2*TMath::Pi())*%f)+[4]*(sqrt(2*TMath::Pi())*%f)+[5]*(sqrt(2*TMath::Pi())*%f))+%f",
+							 m*T,Ehigh-Elow,dE,dE,dE,dE,scale*invT12),
+                                 Elow,Ehigh);
+	      
+              fit3_fix->SetParLimits(0,0,1e-3);
+              fit3_fix->SetParLimits(1,-1e-5,1e-5);
+              fit3_fix->SetParLimits(2,0,10e-4);
+              fit3_fix->SetParLimits(3,0,10e-4);
+              fit3_fix->SetParLimits(4,0,10e-4);
+              fit3_fix->SetParLimits(5,0,10e-4);
+              fit3_fix->SetParNames("b","s","n1","n2","n3","n4");
+      	    }
+
+	  fitterbkg->ResetTF1(fit3_fix);
+	  fitterbkg->ResetTF1Int(fit3_fix_int);
+	  fitterbkg->SetTH1(h);
+	  fitterbkg->SetVector(vec);
           fitterbkg->fModel->SetNChains(2);
           fitterbkg->SetPrecison(1);
 	  if (!quiet)
@@ -682,7 +903,7 @@ int FreqLimit()
               std::cout<<"making fit to toy with 0 signal to model with "<<Form("%E",1/invT12)<<std::endl;
             }
 
-          fitterbkg->Fit(" "," ",2984,3084,0,quiet);
+          fitterbkg->Fit(" "," ",Elow,Ehigh,0,quiet);
 
 
 
@@ -693,7 +914,7 @@ int FreqLimit()
 	  
 	  double logLL_fix=fitterbkg->fModel->LogLikelihood(modes_fix);
 
-	   if (j==0 &&modes[1]<0)
+	   if (j==0 &&modes[Rpar]<0)
             {
 	      logLL=logLL_fix;
 	    }
@@ -706,7 +927,7 @@ int FreqLimit()
 	  // get the p-value
 	  //--------------------------------------------------------------------------
 	  double sens;
-	  GetLimit(sens,hsens,hinvsens,t,foundsens,test_stat[j],p,j,(double)Nsignals,maxr);
+	  GetLimit(sens,hsens,hinvsens,t,foundsens,test_stat[j],p,j,(double)Nsignals,maxR);
 	  
 	  
 	 
@@ -732,10 +953,17 @@ int FreqLimit()
 	   {
 	     h->SetTitle(Form("toy %i T_{1/2}=%E ; Energy [keV] ; counts/0.1 keV ; ",i,invT12));
 	     h->Draw();
-	     fit->SetParameter(0,modes[0]);
-	     fit->SetParameter(1,modes[1]);
+
+	     for (int m;m<modes.size();m++)
+	       {
+		 fit->SetParameter(m,modes[m]);
+	       }
 	     fit3_fix->SetLineColor(3);
-	     fit3_fix->SetParameter(0,modes_fix[0]);
+
+	     for (int m=0;m<modes_fix.size();m++)
+	       {
+		 fit3_fix->SetParameter(m,modes_fix[m]);
+	       }
 	     fit3_fix->Draw("Csame");
 	     fit->Draw("Csame");
 	     can->Draw();
@@ -749,8 +977,8 @@ int FreqLimit()
 
     TGraphErrors *gex;
     TGraphErrors *gd;
-    CreatePValuePlot(p_value,test_stat,test_stat_bkg,Nsignals,0.1,"exclude",can,name,maxr,gex);
-    CreatePValuePlot(p_b,test_stat_0,test_stat_fit_0,Nsignals,0.14e-2,"discover",can,name,maxr,gd);
+    CreatePValuePlot(p_value,test_stat,test_stat_bkg,Nsignals,0.1,"exclude",can,name,maxR,gex);
+    CreatePValuePlot(p_b,test_stat_0,test_stat_fit_0,Nsignals,0.14e-2,"discover",can,name,maxR,gd);
 
     gex->SetTitle("Probability of exclusion ; (T_{1/2})^{-1} ; Prob  ");
     gd->SetTitle("Probability of discovery ; (T_{1/2})^{-1} ; Prob  ");
@@ -759,7 +987,7 @@ int FreqLimit()
     gd->SaveAs(Form("output/CUPID_sens_%s/disc_prob.C",name.Data()));
 
 
-
+  
 
 }
 
@@ -774,7 +1002,7 @@ int FreqLimit()
 
 
 
-int BayesianLimits(TString mode,int Ntoys)
+int BayesianLimits(TString mode,int Ntoys,double bkg,TString name,double maxR,bool full_bkg)
 {
   // CUPID toys
 
@@ -790,37 +1018,114 @@ int BayesianLimits(TString mode,int Ntoys)
   double m = 472;
   double eta=0.95;
   double W=177.7;
-  double b=1e-4;
+  double b=bkg;
+  double slope=-6e-7;
   double G=15.92*pow(10,-15);
   double Nlow=3.90;
   double Nhigh=6.588;
   double mlow=18.4;
   double mmax=50;
+  bool fancy=full_bkg;
+
+  double Elow=2960;
+  double Ehigh=3100;
+
+  std::vector<double>peaks{2978.9,3000.0,3053.9,3081.8};
+  std::vector<double>norm{21e-5,9.4e-5,27.4e-5,6.1e-5};
+
+  // Build the background prediction                                                                                                                                                                      
+  //------------------------------------------------------------------------------------------------------------------------------------------                                                            
+
+  TF1 *fb = new TF1("fb","[0]*([1]+(x-3034.4)*[2]+[3]*TMath::Gaus(x,[4],[5])+[6]*TMath::Gaus(x,[7],[5])+[8]*TMath::Gaus(x,[9],[5])+[10]*TMath::Gaus(x,[11],[5]))",Elow,Ehigh);
+
+  fb->SetParameter(0,m*T);
+  fb->SetParameter(1,b);
+  fb->SetParameter(2,slope);
+  fb->SetParameter(5,5);
+  fb->SetParameter(3,norm[0]);
+  fb->SetParameter(4,peaks[0]);
+  fb->SetParameter(6,norm[1]);
+  fb->SetParameter(7,peaks[1]);
+  fb->SetParameter(8,norm[2]);
+  fb->SetParameter(9,peaks[2]);
+  fb->SetParameter(10,norm[3]);
+  fb->SetParameter(11,peaks[3]);
 
   
+
+  fb->SetNpx(1000);
+
+
+
+
   TRandom3 *rand=new TRandom3(0);
-  TString name="discovery";
   TCanvas *can = new TCanvas();
   can->Print(Form("output/CUPID_sens_%s/toys_0_sig.pdf(",name.Data()),"pdf");
   gStyle->SetOptStat(0);
-  TH1D * h = new TH1D("h","h",100,2984,3084);
-  double scale = T*log(2)*m*eff*eta*6.066e26/(W);
 
+  std::vector<double>vec;
+  TH1D * h = new TH1D("h","h",Ehigh-Elow,Elow,Ehigh);
+  double scale = T*log(2)*m*eff*eta*6.066e26/(W);
   double Nb=100*b*m*T;
 
-
+  
 
   // Create the fits
   // ---------------------------------------------------------------------------
-  
-  TF1 *fit = new TF1("f",Form("[0]*%f+(%f*[1])*TMath::Gaus(x,%f,%f)/(sqrt(2*TMath::Pi())*%f)",m*T,scale,Qbb,dE,dE),2984,3084);
-  TF1 *fit_bk_only = new TF1("f",Form("[0]*%f",m*T),2984,3084);
+  TF1 *fit;
+  TF1 *fit_bk_only;
+  TF1 *fit_int;
+  TF1 *fit_bk_only_int;
+  if (!fancy)
+    {
+      fit = new TF1("f",Form("[0]*%f+(%f*[1])*TMath::Gaus(x,%f,%f)/(sqrt(2*TMath::Pi())*%f)",m*T,scale,Qbb,dE,dE),Elow,Ehigh);
+      fit_int = new TF1("f_int",Form("[0]*%f+(%f*[1])",m*T*(Ehigh-Elow),scale),Elow,Ehigh);
 
-  fit->SetParLimits(0,0,1e-3);
-  fit->SetParLimits(1,0,1e-26);
-  fit_bk_only->SetParLimits(0,0,1e-3);
-  fit->SetParNames("b","T_{1/2}");
-  fit_bk_only->SetParNames("b");
+      fit_bk_only = new TF1("fbk",Form("[0]*%f",m*T),Elow,Ehigh);
+      fit_bk_only_int=new TF1("fbk_int",Form("[0]*%f",m*T*(Ehigh-Elow)),Elow,Ehigh);
+      fit->SetParLimits(0,0,1e-3);
+      fit->SetParLimits(1,0,maxR);
+      fit->SetParNames("b","T_{1/2}^{-1}");
+      fit_bk_only->SetParNames("b");
+      fit_bk_only->SetParLimits(0,0,2e-3);
+
+    }
+  else
+    {
+      fit = new TF1("f",Form("%f*([0]+(x-3034.4)*[1]+[2]*TMath::Gaus(x,%f,%f)+[3]*TMath::Gaus(x,%f,%f)+[4]*TMath::Gaus(x,%f,%f)+[5]*TMath::Gaus(x,%f,%f))+(%f*[6])*TMath::Gaus(x,%f,%f)/(sqrt(2*TMath::Pi())*%f)",
+                             m*T,peaks[0],dE,peaks[1],dE,peaks[2],dE,peaks[3],dE,scale,Qbb,dE,dE),Elow,Ehigh);
+
+      fit_int = new TF1("f_int",Form("%f*(%f*[0]+[2]*(sqrt(2*TMath::Pi())*%f)+[3]*(sqrt(2*TMath::Pi())*%f)+[4]*(sqrt(2*TMath::Pi())*%f)+[5]*(sqrt(2*TMath::Pi())*%f))+(%f*[6])",
+				 m*T,Ehigh-Elow,dE,dE,dE,dE,scale),Elow,Ehigh);
+
+      
+      fit_bk_only = new TF1("fbk",Form("%f*([0]+(x-3034.4)*[1]+[2]*TMath::Gaus(x,%f,%f)+[3]*TMath::Gaus(x,%f,%f)+[4]*TMath::Gaus(x,%f,%f)+[5]*TMath::Gaus(x,%f,%f))",
+                                       m*T,peaks[0],dE,peaks[1],dE,peaks[2],dE,peaks[3],dE),
+                            Elow,Ehigh);
+      fit_bk_only_int = new TF1("fbk_int",Form("%f*(%f*[0]+[2]*(sqrt(2*TMath::Pi())*%f)+[3]*(sqrt(2*TMath::Pi())*%f)+[4]*(sqrt(2*TMath::Pi())*%f)+[5]*(sqrt(2*TMath::Pi())*%f))",
+					       m*T,Ehigh-Elow,dE,dE,dE,dE),
+				Elow,Ehigh);
+      
+      
+      fit->SetParLimits(0,0,1e-3);
+      fit->SetParLimits(1,-20e-6,20e-6);
+      fit->SetParLimits(2,0,10e-4);
+      fit->SetParLimits(3,0,10e-4);
+      fit->SetParLimits(4,0,10e-4);
+      fit->SetParLimits(5,0,10e-4);
+      fit->SetParLimits(6,0,maxR);
+
+      fit->SetParNames("b","s","n1","n2","n3","n4","T_{1/2}^{-1}");
+      fit_bk_only->SetParNames("b","s","n1","n2","n3","n4");
+
+      fit_bk_only->SetParLimits(0,0,1e-3);
+      fit_bk_only->SetParLimits(1,-20e-6,20e-6);
+      fit_bk_only->SetParLimits(2,0,10e-4);
+      fit_bk_only->SetParLimits(3,0,10e-4);
+      fit_bk_only->SetParLimits(4,0,10e-4);
+      fit_bk_only->SetParLimits(5,0,10e-4);
+
+    }
 
 
 
@@ -860,13 +1165,17 @@ int BayesianLimits(TString mode,int Ntoys)
   TH1D *ht_0= new TH1D("ht_0","ht_0",2000,0,100);
 
   can->Print(Form("output/CUPID_sens_%s/toys_0_sig.pdf(",name.Data()),"pdf");
+
   
-  GenToy(h,rand,Nb,2984,3084,0,3034.4,dE);
+  if (!fancy)
+    GenToy(h,vec,rand,Nb,Elow,Ehigh,0,3034.4,dE);
+  else
+    GenFancyToy(h,vec,rand,fb,Elow,Ehigh,0,3034.4,dE);
 
   // make the fitter
   // -----------------------------------------------------------------------------------
-  BatGraphFitter *fitter2= new BatGraphFitter(h,fit);
-  BatGraphFitter *fitterbkg= new BatGraphFitter(h,fit_bk_only);
+  BatGraphFitter *fitter2= new BatGraphFitter(h,fit,fit_int,vec);
+  BatGraphFitter *fitterbkg= new BatGraphFitter(h,fit_bk_only,fit_bk_only_int,vec);
 
 
   TLatex *tlat =new TLatex();
@@ -897,7 +1206,6 @@ int BayesianLimits(TString mode,int Ntoys)
 	  
 
 	  Ns=scale*inV;
-	  Nin=GenToy(h,rand,Nb,2984,3084,Ns,3034.4,dE);
 	}
       else
 	{
@@ -911,11 +1219,15 @@ int BayesianLimits(TString mode,int Ntoys)
 	      inV=rand->Uniform(0,3e-27);
 	    }
 	  Ns=scale*inV;
-	  GenToy(h,rand,Nb,2984,3084,Ns,3034.4,dE);
 	  
 	}
 
       
+      
+      if (!fancy)
+	GenToy(h,vec,rand,Nb,Elow,Ehigh,Ns,3034.4,dE);
+      else
+	GenFancyToy(h,vec,rand,fb,Elow,Ehigh,Ns,3034.4,dE);
 
 
       
@@ -928,9 +1240,10 @@ int BayesianLimits(TString mode,int Ntoys)
       bool quiet=!(i%100==0);
 
       fitterbkg->SetTH1(h);
+      fitterbkg->SetVector(vec);
       fitterbkg->fModel->SetNChains(2);
       fitterbkg->SetPrecison(2);
-      fitterbkg->Fit(" "," ",2984,3084,1,quiet);
+      fitterbkg->Fit(" "," ",Elow,Ehigh,1,quiet);
 
 
       // Get the evidence
@@ -938,37 +1251,34 @@ int BayesianLimits(TString mode,int Ntoys)
 
 
       fitter2->SetTH1(h);
- 
+      fitter2->SetVector(vec);
       fitter2->fModel->SetNChains(2);
       fitter2->SetPrecison(2);
-      fitter2->Fit(" "," ",2984,3084,1,quiet);
-      double evidence_SB = fitter2->fModel->Normalize();
+      fitter2->Fit(" "," ",Elow,Ehigh,1,quiet);
+
+      //double evidence_SB = fitter2->fModel->Normalize();
       std::vector<double>modes =fitter2->fModel->GetBestFitParameters();
+      
+      double evidence_SB = fitter2->fModel->Normalize();
 
       double logLL=fitter2->fModel->LogLikelihood(modes);
 
 
       
-	    
+      h->Draw("HIST");
       
-      fit->SetParameters(modes[0],modes[1]);
-      fit->Draw("Csame");
-      tlat->DrawLatex(3000,3,Form("p(B)=%03f, p(S)=%03f, N=%f",100*evidence_B/(evidence_B+evidence_SB),100*evidence_SB/(evidence_B+evidence_SB),Nin));
-      
-      
-      
-      
-      // draw the outputs
+     fitter2->fModel->fTF1->Draw("Csame");
+          // draw the outputs
       can->Draw();
       if (i%100==0)
 	{
 	  can->Print(Form("output/CUPID_sens_%s/toys_0_sig.pdf",name.Data()),"pdf");
-      
-
+	  can->SaveAs(Form("output/CUPID_sens_%s/data_%i.C",name.Data(),i));
+	  
 	}
 
       
-      margdistro = (TH1D*)fitter2->fModel->GetMarginalizedHistogram("T_{1/2}" );
+      margdistro = (TH1D*)fitter2->fModel->GetMarginalizedHistogram("T_{1/2}^{-1}" );
       margdistro->SetTitle(Form("Posterior on T_{1/2}^{-1} for toy %i ; T_{1/2}^{-1} ; Probability [arb. units] ; ",i));
       
       margdistro->Draw();
@@ -1003,21 +1313,18 @@ int BayesianLimits(TString mode,int Ntoys)
       if (mode=="E")
 	{
 	  
-	  corrdistro = (TH2D*)fitter2->fModel->GetMarginalizedHistogram( "b","T_{1/2}" );
-	  
-	  corrdistro->SaveAs(Form("output/CUPID_sens_%s/toys_%i.root",name.Data(),i));
+	  corrdistro = (TH2D*)fitter2->fModel->GetMarginalizedHistogram( "b","T_{1/2}^{-1}" );
+
+	  if (i%100==1)
+	    corrdistro->SaveAs(Form("output/CUPID_sens_%s/toys_%i.root",name.Data(),i));
 
 	  corrdistro->Draw("colz");
 
-	  can->Print(Form("output/CUPID_sens_%s/toys_0_sig.pdf",name.Data()),"pdf");
-	  
-	  hprofile=(TGraphErrors*)profile(corrdistro,"Y",logLL);
-	  hprofile->SetName("hprofile");
-	  hprofile->SaveAs(Form("output/CUPID_sens_%s/toys_profile_%i.root",name.Data(),i));
-	  hprofile->Draw("APL");
-
-	 
-	  
+	  if (i%100==1)
+	    {
+	      can->Print(Form("output/CUPID_sens_%s/toys_0_sig.pdf",name.Data()),"pdf");
+			    
+	    }
 
 	  
 	  // save them
@@ -1042,10 +1349,12 @@ int BayesianLimits(TString mode,int Ntoys)
 	}
 
       if (i%100==0)
-	can->Print(Form("output/CUPID_sens_%s/toys_0_sig.pdf",name.Data()),"pdf");
+	{
+	  can->Print(Form("output/CUPID_sens_%s/toys_0_sig.pdf",name.Data()),"pdf");
+	  fitter2->fModel->PrintAllMarginalized(Form("output/CUPID_sens_%s/plots_%i_sig.pdf",name.Data(),i));
 
 
-
+	}
       // Get the evidences
       
       if (mode=="E")
@@ -1224,10 +1533,131 @@ int BayesianLimits(TString mode,int Ntoys)
   return 1;
 }
 
- int main()
- {
-   //BayesianLimits("D",10000);
+void Usage()
+{
+  std::cout << std::endl << std::endl;
+  std::cout << "---------------------------------------------------------------------------------" << std::endl;
+  if( std::getenv("USER") != NULL )
+    std::cout << "Hi " << std::getenv("USER") <<"! The usage of this wonderful program is: " << std::endl;
+  else
+    std::cout << "Hi there! The usage of this wonderful program is:" << std::endl;
+  std::cout<<"./CUPID_Sens"<<std::endl;
+  std::cout<<"options "<<std::endl;
+  std::cout<<"------------------------------------------------------------"<<std::endl;
+  std::cout<<"-f (or --fit-type)        [either B for bayesian or F for frequentst] (default: B)"<<std::endl;
+  std::cout<<"-n (or --number-toys)     [number of toys]                            (default: 10000)] "<<std::endl;
+  std::cout<<"-s (or --number-signals)  [number of signals for profile likelihood]  (default 250)] "<<std::endl;
+  std::cout<<"-b (or --bkg-index)       [background index]                          (default: 1e-4)"<<std::endl;
+  std::cout<<"-f (or --full-bkg)        [ful background? 0 or 1]                    (default: 0)"<<std::endl;
+  std::cout<<"-n (or --name)            [name for output]                           (default bayesian_baseline_simple_bkg)"<<std::endl;
+  std::cout<<"-r (or --max-rate)        [maximum rate:                              (default 1e-26 yr-1) "<<std::endl;
+  std::cout<<"-h (or --help)              [this help]"<<std::endl;
 
-   FreqLimit();
+}
+
+int main(int argc,char **argv)
+ {
+
+   bool bayesian_fit=1;
+   int Ntoys=10000;
+   int Nsignals=250;
+   double bkg_index=1e-4;
+   bool full_bkg=0;
+   TString name="bayesian_baseline_simple_bkg";
+   double max_rate=1e-26;
+   
+
+   {
+     static struct option long_options[] = {
+					    { "fit-type",        required_argument,  nullptr, 'm' },
+					    { "number-toys",       required_argument,  nullptr,'n'},
+					    { "number-signals",required_argument,nullptr,'s'},
+					    { "bkg-index",required_argument, nullptr,'b'},
+					    { "full-bkg",      required_argument,nullptr,'f'  },
+					    { "name",         required_argument,  nullptr,'e'},
+					    { "max-rate",    required_argument, nullptr,'r'},
+					    { "help",              no_argument,        nullptr,'h'},
+					    {nullptr, 0, nullptr, 0}
+  };
+     const char* const short_options = "m:n:b:f:e:r:s:h";
+     
+     
+     int c;
+  
+     while ((c = getopt_long(argc, argv, short_options, long_options, nullptr)) != -1 )
+       {
+	 switch (c)
+	   {
+	   case 'm':
+	     {
+	       std::cout<<optarg<<std::endl;
+	       if (std::string(optarg)=="B")
+		 bayesian_fit=1;
+	       else if (std::string(optarg)=="F")
+		 bayesian_fit=0;
+	       else
+		 {
+		   std::cout<<"Error fit type must be either 'B' or 'F'"<<std::endl;
+		   return -1;
+		 }
+	       break;
+	     }
+	   case 'n':
+	     {
+	       Ntoys = atoi(optarg);
+	       break;
+	     }
+	   case 's':
+	     {
+	       Nsignals=atoi(optarg);
+	       break;
+	     }
+	   case 'b':
+	     {
+	       bkg_index=atof(optarg);
+	       break;
+	     }
+	     
+	   case 'f':
+	     {
+	       full_bkg=atoi(optarg);
+	       break;
+	     }
+	   case 'e':
+	     {
+	       name=optarg;
+	       break;
+	     }
+      
+	   case 'r':
+	     {
+	       max_rate=atof(optarg);
+	       break;
+	       
+	     }
+
+	   case'h':
+	     {
+	       Usage();
+	       return 0;
+	     }
+	   default: {
+	     exit(1);
+	   }
+	     
+	   }
+    
+
+    
+       }
+   }
+
+   if (bayesian_fit==1)
+     BayesianLimits("E",Ntoys,bkg_index,name,max_rate,full_bkg);
+   else
+     FreqLimit(bkg_index,name,full_bkg,max_rate,Nsignals,Ntoys);
+
+
+   return 1;
  }
 
