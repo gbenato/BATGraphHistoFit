@@ -1,5 +1,5 @@
-#include "src/BatGraphFitter.h"
-#include "src/BAT_GraphFit.h"
+#include "BatGraphFitter.h"
+#include "BAT_GraphFit.h"
 #include "TFile.h"
 
 #include "TCanvas.h"
@@ -291,7 +291,7 @@ void BatGraphFitter::Fit(TString option,TString goption,double low,double high,b
       std::cout<<" "<<std::endl;
       delete T;
       fModel->PlotCI(g1,g2,g3);
-
+      fGrint=g1;
     }
   else
     {
@@ -453,6 +453,8 @@ void BatGraphFitter::GetCredibleInterval(TGraphAsymmErrors * &grint1,TGraphAsymm
   grint2->SetFillColorAlpha(kOrange-3,0.7);
   grint3->SetFillColorAlpha(kRed+1,0.7);
 
+
+  for (int i=0;i<n;i++)delete histos[i];
 
 
 

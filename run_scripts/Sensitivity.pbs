@@ -1,0 +1,30 @@
+#!/bin/bash
+### This is a template PBS script for running g4cuore on cuore-login.
+### PBS scripts start with a pound (#) sign.
+### Comments start with >1 pound sign.
+
+### Uncomment following lines to activate email notifications. Rember to update email address!!!
+### Email options are available for following job statuses: a-->abort b-->begin e-->end.
+### I suggest to just use "a" option.
+
+### Use CUORE queue. Do not change.
+#PBS -q cupid
+
+### Allocate memory (optional but suggested)
+#PBS -l mem=2G
+
+### Error and log files. Update directories!!
+#PBS -e localhost://data/users/tdixon/BATGraphHistoFit/jobs_log/
+#PBS -o localhost://data/users/tdixon/BATGraphHistoFit/jobs_log/
+
+
+### Set environment variables
+source /software/LoadBAT.sh
+
+### Useful paths
+INPATH=/data/users/tdixon/BATGraphHistoFit/
+
+cd $INPATH
+
+echo $CONFIG
+./bin/CUPID_Sens $CONFIG

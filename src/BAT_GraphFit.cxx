@@ -297,6 +297,7 @@ double BAT_GraphFit::LogLikelihood(const std::vector<double>& pars)
   // implement the gaussian log lilihood
 
   double logL=0;
+  double pi=3.14159265359;
 
   // gaussian is g(x)=1/(sigma*sqrt(2*pi))*TMath::Exp(-(x-mu)^2/2sigma^2)
   // hmm i think we should use the split gaussian
@@ -334,7 +335,7 @@ double BAT_GraphFit::LogLikelihood(const std::vector<double>& pars)
 	  double elow= fGraph->GetErrorYlow(i);
 	  double ehigh = fGraph->GetErrorYhigh(i);
 	  double exp;
-	  double N = sqrt(2*TMath::Pi())*(elow+ehigh)/2.;
+	  double N = sqrt(2*pi)*(elow+ehigh)/2.;
 	  if (mod_y<y)
 	    {
 	      exp=-pow(mod_y-y,2)/(2*elow*elow);

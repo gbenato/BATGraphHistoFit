@@ -8,3 +8,6 @@
 output/*
 plots/*
 bin/*
+junk/*
+jobs_log/*
+log/*

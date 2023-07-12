@@ -1,7 +1,7 @@
 
 #include "TGraphAsymmErrors.h"
 #include "TF1.h"
-#include "src/BAT_GraphFit.h"
+#include "BAT_GraphFit.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TGraphErrors.h"
@@ -9,6 +9,7 @@
 #include "TGraphAsymmErrors.h"
 #include "TTree.h"
 #include <vector>
+#include <chrono>
 class BatGraphFitter
 {
  public:
@@ -42,6 +43,7 @@ class BatGraphFitter
     if (fGraph!=nullptr)delete fGraph;
     if (fGraph!=nullptr)delete fGraph;
   };
+  TGraphAsymmErrors *fGrint;
   double fMax,fMin;
   double fQbb;
   void SetQbb(double Q){fQbb=Q;};
@@ -50,6 +52,7 @@ class BatGraphFitter
   double fSmax;
   TF1  *fTF1=nullptr;
   TF1  *fTF1Int=nullptr;
+
   TString fMode;
   TH1D *fHisto=nullptr;
   TGraph *fGraphBinomTrial;
