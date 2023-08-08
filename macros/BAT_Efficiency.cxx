@@ -135,7 +135,7 @@ std::vector<TH1D*>GetHistograms( TH1D* &h,
 }
 
 // method to combine the two probability distributions of Npass and Nfail to one on efficiency
-TH1D * toy_combine(TH1D*hpass,TH1D*hfail,double &mu,double &sigma,double E,TString mode="P")
+TH1D * toy_combine(TH1D*hpass,TH1D*hfail,double &mu,double &sigma,double E,int ds,TString mode="P")
 {
 
     std::string name = "eff_" + std::to_string((int)E);
@@ -150,7 +150,8 @@ TH1D * toy_combine(TH1D*hpass,TH1D*hfail,double &mu,double &sigma,double E,TStri
 
     }
   hout->GetXaxis()->SetRangeUser(0.8,1.1);
-  hout->SetTitle(Form("Efficiency posterior for energy %i keV ; Efficiency ; Probability ; ",(int)E));
+  hout->SetTitle(Form("DS %i - Efficiency posterior for energy %i keV ; Efficiency ; Probability ; ",ds,(int)E));
+  std::cout << "FIGA: " << hout->GetTitle() << std::endl;
   if( mode == "P" )
       {
 	  TF1 *fGauss= new TF1("fGauss","gaus",0,1);
@@ -459,7 +460,7 @@ int main(int argc, char **argv)
   for (int i=0;i<hpass.size();i++)
     {
       double mu,sigma;
-      TH1D * hout=toy_combine(hpass[i],hfail[i],mu,sigma,energies[i],mode);
+      TH1D * hout=toy_combine(hpass[i],hfail[i],mu,sigma,energies[i],ds,mode);
 
       if (is_on[i]==true)
 	{
