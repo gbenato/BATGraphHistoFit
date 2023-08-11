@@ -208,7 +208,7 @@ void BAT_GraphFit::SetGraph(TGraphAsymmErrors *&g,double max,double min)
     fGraph=g;
     AddObservable("fQ",fMinObs,fMaxObs,"f(Q_{#beta#beta})","[]");
 
-    GetObservables().SetNBins(300.*(fMaxObs-fMinObs));
+    GetObservables().SetNBins(100.*(fMaxObs-fMinObs));
   
 }
 void BAT_GraphFit::SetHisto(TH1D*&h,TString type)
