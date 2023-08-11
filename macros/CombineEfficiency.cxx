@@ -63,7 +63,7 @@ void Combine( std::vector<TH1D*>& inputhisto,
     for( auto& h: inputhisto )
 	if( h->GetEntries() < N )
 	    N = h->GetEntries();
-    N /= 5;
+    //N /= 5;
     std::cout << "N: " << N << std::endl;
     
     for( int i=0; i<N; i++ )
