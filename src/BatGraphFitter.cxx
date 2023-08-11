@@ -189,7 +189,7 @@ void BatGraphFitter::Fit( TString option,
 	}
 
 
-    BCLog::SetLogLevelScreen(BCLog::error);
+    BCLog::SetLogLevelScreen(BCLog::summary);
 
     // add some code to delete the old model (or reset it)
 

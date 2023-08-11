@@ -134,6 +134,7 @@ void Usage()
   std::cout<<"-b (or --bias-function)     [bias function: default [0]*[0]+[1]*x+[2]*x*x]"<<std::endl;
   std::cout<<"-l (or --label)             [label for outputs default "" ]"<<std::endl;
   std::cout<<"-q (or --q-value)           [q-value to evaluate the function at default: 2527 keV]"<<std::endl;
+  std::cout<<"-p (or --precision)         [precision for efficiency fit on single peaks. Default: 3 (kHigh)]"<<std::endl;
   std::cout<<"-h (or --help)              [this help]"<<std::endl;
 
 }
@@ -144,11 +145,12 @@ int main(int argc, char **argv)
   
   int ds=3602;
   TString bias_function="pol2";
-  TString reso_function="sqrt([0]*[0]+[1]*x)";
+  TString reso_function="[0]+[1]*x";//"sqrt([0]*[0]+[1]*x)";
   TString path="inputs/reso/fitresults";
   TString out_path = Form("output/CUORE_reso/");
   TString label="";
   double Qbb=2527;
+  int precision=3;
   {
   static struct option long_options[] = {
 					 { "input-path",        required_argument,  nullptr, 'i' },
@@ -158,10 +160,11 @@ int main(int argc, char **argv)
 					 { "reso-function",         required_argument,  nullptr,'r'},
 					 { "label",    required_argument, nullptr,'l'},
 					 { "q-value",           required_argument,  nullptr, 'q' },
+					 { "precision", required_argument, nullptr, 'p' },
 					 { "help",              no_argument,        nullptr,'h'},
 					 {nullptr, 0, nullptr, 0}
   };
-  const char* const short_options = "i:o:d:r:b:l:q:h";
+  const char* const short_options = "i:o:d:r:b:l:q:p:h";
   
   int c;
   
@@ -194,11 +197,13 @@ int main(int argc, char **argv)
       bias_function = optarg;
       break;
     }
-
-      
     case 'q': {
       Qbb = atof(optarg);
       break;
+    }
+    case 'p':{
+	precision = atoi(optarg);
+	break;
     }
     case'h': {
       Usage();
@@ -224,6 +229,7 @@ int main(int argc, char **argv)
     std::vector<LineShapeResults> input = ReadInputText2Map(Form("%s_ds%i.dat",path.Data(),ds));
     
     out_path+=Form("/ds%i",ds);
+    std::system("mkdir -p " + out_path);
     // create graphs
     
     TGraphErrors * gerror_bias = new TGraphErrors();
@@ -250,24 +256,24 @@ int main(int argc, char **argv)
     TF1 *fBias = new TF1("fBias",bias_function,0,4000);
     
     gerror_bias->Fit(fBias);
-    fBias->SetParLimits(0,fBias->GetParameters()[0]-5*fBias->GetParErrors()[0],fBias->GetParameters()[0]+5*fBias->GetParErrors()[0]);
-    fBias->SetParLimits(1,fBias->GetParameters()[1]-5*fBias->GetParErrors()[1],fBias->GetParameters()[1]+5*fBias->GetParErrors()[1]);
-    fBias->SetParLimits(2,fBias->GetParameters()[2]-5*fBias->GetParErrors()[2],fBias->GetParameters()[2]+5*fBias->GetParErrors()[2]);
+    fBias->SetParLimits(0,fBias->GetParameters()[0]-12.*fBias->GetParErrors()[0],fBias->GetParameters()[0]+12.*fBias->GetParErrors()[0]);
+    fBias->SetParLimits(1,fBias->GetParameters()[1]-12.*fBias->GetParErrors()[1],fBias->GetParameters()[1]+12.*fBias->GetParErrors()[1]);
+    fBias->SetParLimits(2,fBias->GetParameters()[2]-12.*fBias->GetParErrors()[2],fBias->GetParameters()[2]+12.*fBias->GetParErrors()[2]);
 
   
     TF1 *fReso = new TF1("fReso",reso_function,0,4000);
     gerror_reso->Fit(fReso);
     
-    fReso->SetParLimits(0,fReso->GetParameters()[0]-5*fReso->GetParErrors()[0],fReso->GetParameters()[0]+5*fReso->GetParErrors()[0]);
-    fReso->SetParLimits(1,fReso->GetParameters()[1]-5*fReso->GetParErrors()[1],fReso->GetParameters()[1]+5*fReso->GetParErrors()[1]);
-    fReso->SetParLimits(2,fReso->GetParameters()[2]-5*fReso->GetParErrors()[2],fReso->GetParameters()[2]+5*fReso->GetParErrors()[2]);
+    fReso->SetParLimits(0,fReso->GetParameters()[0]-12.*fReso->GetParErrors()[0],fReso->GetParameters()[0]+12.*fReso->GetParErrors()[0]);
+    fReso->SetParLimits(1,fReso->GetParameters()[1]-12.*fReso->GetParErrors()[1],fReso->GetParameters()[1]+12.*fReso->GetParErrors()[1]);
+    fReso->SetParLimits(2,fReso->GetParameters()[2]-12.*fReso->GetParErrors()[2],fReso->GetParameters()[2]+12.*fReso->GetParErrors()[2]);
 
     // CREATE THE BAT fitter (bias)
     // -----------------------------------------------
   
     BatGraphFitter *fitter_bias = new BatGraphFitter(gerror_bias,fBias);
     fitter_bias->fModel->SetObsRange(-2,2);
-    fitter_bias->SetPrecison(4);
+    fitter_bias->SetPrecison(precision);
     fitter_bias->SetQbb(Qbb);
     fitter_bias->SetGraphMaxMin(20,-20);  
     fitter_bias->fModel->WriteMarkovChain(Form("%s/output_bias_%s_mcmc.root",out_path.Data(),label.Data()), "RECREATE");
@@ -298,9 +304,9 @@ int main(int argc, char **argv)
 
   
     BatGraphFitter *fitter_reso = new BatGraphFitter(gerror_reso,fReso);
-    fitter_bias->fModel->SetObsRange(0.8,1.2);
+    fitter_reso->fModel->SetObsRange(0.3,1.8);
 
-    fitter_reso->SetPrecison(4);
+    fitter_reso->SetPrecison(precision);
     fitter_reso->SetQbb(Qbb);
     fitter_reso->SetGraphMaxMin(2,0);
     fitter_reso->fModel->WriteMarkovChain(Form("%s/output_reso_%s_mcmc.root",out_path.Data(),label.Data()), "RECREATE");
