@@ -65,7 +65,7 @@ void Combine( std::vector<TH1D*>& inputhisto,
 	    N = h->GetEntries();
     //N /= 5;
     std::cout << "N: " << N << std::endl;
-    
+    std::cout << "nH: " << inputhisto.size() << std::endl;    
     for( int i=0; i<N; i++ )
 	{
 	    size_t nH = inputhisto.size();
@@ -139,8 +139,9 @@ void Usage()
   std::cout<<"options "<<std::endl;
   std::cout<<"------------------------------------------------------------"<<std::endl;
   std::cout<<"-i (or --input-path)        [directory for input] (default: none)"<<std::endl;
-  std::cout<<"-i (or --input-file)        [input file name] (default: none)"<<std::endl;
-  std::cout<<"-i (or --input-histo)       [input histo name] (default: none)"<<std::endl;
+  std::cout<<"-n (or --input-file)        [input file name] (default: none)"<<std::endl;
+  std::cout<<"-N (or --input-histo)       [input histo name] (default: none)"<<std::endl;
+  std::cout<<"-a (or --input-ascii-file)  [input ascii file] (default: none)"<<std::endl;
   std::cout<<"-o (or --output-path)       [directory for output file (default: output/CUORE_eff/] "<<std::endl;
   std::cout<<"-d (or --dataset)           [dataset number : default none] "<<std::endl;
   std::cout<<"-f (or --first-dataset)     [dataset number : default 0] "<<std::endl;
@@ -155,6 +156,7 @@ int main(int argc, char **argv)
     std::vector<std::string> inputdirs;
     std::vector<std::string> inputname;
     std::vector<std::string> inputhistoname;
+    std::vector<std::string> inputasciiname;
     std::string outpath;
     std::vector<int> ds;
     int firstds = 0;
@@ -163,6 +165,7 @@ int main(int argc, char **argv)
 	{ "input-path",        required_argument, nullptr,'i'},
 	{ "input-file",        required_argument, nullptr,'n'},
 	{ "input-histo",       required_argument, nullptr,'N'},
+	{ "input-ascii-file",  required_argument, nullptr,'a' },
 	{ "output-path",       required_argument, nullptr,'o'},
 	{ "dataset",           required_argument, nullptr,'d'},
 	{ "first-dataset",     required_argument, nullptr,'f'},
@@ -171,7 +174,7 @@ int main(int argc, char **argv)
 	{nullptr, 0, nullptr, 0}
     };
 
-    const char* const short_options = "i:n:N:o:d:f:l:h";
+    const char* const short_options = "i:n:N:a:o:d:f:l:h";
     int c;
     while ((c = getopt_long(argc, argv, short_options, long_options, nullptr)) != -1 )
 	{
@@ -185,11 +188,19 @@ int main(int argc, char **argv)
 		case 'n':
 		    {
 			inputname.emplace_back(optarg);
+			inputasciiname.emplace_back("");
 			break;
 		    }
 		case 'N':
 		    {
 			inputhistoname.emplace_back(optarg);
+			break;
+		    }
+		case 'a':
+		    {
+			inputname.emplace_back("");
+			inputhistoname.emplace_back("");
+			inputasciiname.emplace_back(optarg);
 			break;
 		    }
 		case 'o':
@@ -254,25 +265,105 @@ int main(int argc, char **argv)
     double minEff = 0.;
     double maxEff = 1.;
     std::vector<TH1D*> outputhisto;
+    TF1* func = new TF1("func","gaus",0,1);
+    func->SetNpx(10000);
+    func->SetParameter(0,1);
+
     for( size_t d=0; d<nDs; d++ )
 	{
 	    std::string histoname = "CombinedEff_DS" + std::to_string(ds[d]);
 	    outputhisto.emplace_back( new TH1D( histoname.c_str(), histoname.c_str(), nBins, minEff, maxEff ) );
 
-	    std::vector<TFile*> file;
+	    std::vector<TFile*> rootfile;
+	    std::vector<std::ifstream> asciifile;
 	    std::vector<TH1D*> inputhisto;
 	    for( size_t dir=0; dir<nDirs; dir++ )
 	    	{
-		    std::string filename = inputdirs[dir] + "ds" + std::to_string(ds[d]) + "/" + inputname[dir];
-		    std::ifstream testfile(filename.c_str());
-		    if( !testfile.good() )
+
+		    if( inputname[dir].find(".root") != std::string::npos )// ROOT files
 			{
-			    std::cout << "File " << filename << " does not exist. Abort." << std::endl;
-			    exit(0);
+			    std::string filename = inputdirs[dir] + "ds" + std::to_string(ds[d]) + "/" + inputname[dir];
+			    std::ifstream testfile(filename.c_str());
+			    if( !testfile.good() )
+				{
+				    std::cout << "File " << filename << " does not exist. Abort." << std::endl;
+				    exit(0);
+				}
+			    
+			    rootfile.emplace_back( new TFile(filename.c_str()) );
+			    inputhisto.emplace_back( (TH1D*)(rootfile.back()->Get(inputhistoname[dir].c_str())) );
+			    asciifile.emplace_back(std::ifstream(""));
 			}
-		    
-		    file.emplace_back( new TFile(filename.c_str()) );
-		    inputhisto.emplace_back( (TH1D*)(file.back()->Get(inputhistoname[dir].c_str())) );
+		    else// ASCII files
+			{
+			    std::string filename = inputdirs[dir] + "ds" + std::to_string(ds[d])
+				+ "/" + inputasciiname[dir] + "_ds" + std::to_string(ds[d]) + "_combined.txt";
+			    
+			    rootfile.emplace_back( new TFile() );
+			    asciifile.emplace_back(std::ifstream( filename.c_str() ));
+
+			    std::string tmpS;			    
+			    for( int i=0; i<3; i++ )
+				std::getline( asciifile.back(), tmpS );
+			    double tmpVal;
+			    double eff, upper, lower;
+			    for( int i=0; i<4; i++ )
+				{
+				    asciifile.back() >> tmpS >> tmpVal;
+				    if( tmpS == "fEff" )
+					eff = tmpVal;
+				    else if( tmpS == "fEffLower" )
+					lower = tmpVal;
+				    else if( tmpS == "fEffUpper" )
+					upper = tmpVal;
+				}
+
+			    double errLower = eff - lower;
+			    double errUpper = upper - eff;
+			    double err = 0.5 * ( errLower + errUpper );
+
+			    func->SetParameter(1,eff);
+			    func->SetParameter(2,err);
+
+			    std::string histoname = "PulserEff_ds" + std::to_string(ds[d]);
+			    inputhisto.emplace_back( new TH1D( histoname.c_str(), histoname.c_str(), 30000, 0, 1 ) );
+			    for( int i=0; i<1.e7; i++ )
+				inputhisto.back()->Fill( func->GetRandom() );
+
+			}
+			/*
+		    if( inputname[dir].find(".root") != std::string::npos )
+			{
+			    std::string filename = inputdirs[dir] + "ds" + std::to_string(ds[d]) + "/" + inputname[dir];
+			    std::ifstream testfile(filename.c_str());
+			    if( !testfile.good() )
+				{
+				    std::cout << "File " << filename << " does not exist. Abort." << std::endl;
+				    exit(0);
+				}
+			    
+			    rootfile.emplace_back( new TFile(filename.c_str()) );
+			    inputhisto.emplace_back( (TH1D*)(rootfile.back()->Get(inputhistoname[dir].c_str())) );
+			    asciifile.emplace_back(std::ifstream(""));
+			}
+		    else
+			{
+			    std::string filename = inputdirs[d] + "ds" + std::to_string(ds[d]) + "/" + inputasciiname[dir] + "_ds" + std::to_string(ds[d]) + "_combined.txt";
+			    std::cout << "ASCII FILE: " << filename << std::endl;
+			    rootfile.emplace_back( new TFile() );
+			    asciifile.emplace_back(std::ifstream(filename.c_str()));
+			    std::string tmpS;			    
+			    for( int i=0; i<3; i++ )
+				std::getline( asciifile.back(), tmpS );
+			    double tmpVal;
+			    double eff, upper, lower;
+			    for( int i=0; i<4; i++ )
+				{
+				    asciifile.back() >> tmpS >> tmpVal;
+				    std::cout << tmpS << "\t" << tmpVal;
+				}
+			}
+		    */
 	    	}
 
 
@@ -280,8 +371,9 @@ int main(int argc, char **argv)
 
 	    ComputeShortestInterval( ds[d], outputhisto[d] );
 	    
-	    for( auto& f: file )
+	    for( auto& f: rootfile )
 		f->Close();
+
 	}
 
     std::string outputname = outpath + "CombinedEfficiencies.root";
