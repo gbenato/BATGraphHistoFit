@@ -275,7 +275,7 @@ int main(int argc, char **argv)
 	    outputhisto.emplace_back( new TH1D( histoname.c_str(), histoname.c_str(), nBins, minEff, maxEff ) );
 
 	    std::vector<TFile*> rootfile;
-	    std::vector<std::ifstream> asciifile;
+	    std::vector<std::ifstream*> asciifile;
 	    std::vector<TH1D*> inputhisto;
 	    for( size_t dir=0; dir<nDirs; dir++ )
 	    	{
@@ -292,7 +292,7 @@ int main(int argc, char **argv)
 			    
 			    rootfile.emplace_back( new TFile(filename.c_str()) );
 			    inputhisto.emplace_back( (TH1D*)(rootfile.back()->Get(inputhistoname[dir].c_str())) );
-			    asciifile.emplace_back(std::ifstream(""));
+			    asciifile.emplace_back(new std::ifstream(""));
 			}
 		    else// ASCII files
 			{
@@ -300,16 +300,16 @@ int main(int argc, char **argv)
 				+ "/" + inputasciiname[dir] + "_ds" + std::to_string(ds[d]) + "_combined.txt";
 			    
 			    rootfile.emplace_back( new TFile() );
-			    asciifile.emplace_back(std::ifstream( filename.c_str() ));
+			    asciifile.emplace_back(new std::ifstream( filename.c_str() ));
 
 			    std::string tmpS;			    
 			    for( int i=0; i<3; i++ )
-				std::getline( asciifile.back(), tmpS );
+				std::getline( *(asciifile.back()), tmpS );
 			    double tmpVal;
 			    double eff, upper, lower;
 			    for( int i=0; i<4; i++ )
 				{
-				    asciifile.back() >> tmpS >> tmpVal;
+				    *(asciifile.back()) >> tmpS >> tmpVal;
 				    if( tmpS == "fEff" )
 					eff = tmpVal;
 				    else if( tmpS == "fEffLower" )
