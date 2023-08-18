@@ -135,6 +135,7 @@ void Usage()
   std::cout<<"-l (or --label)             [label for outputs default "" ]"<<std::endl;
   std::cout<<"-q (or --q-value)           [q-value to evaluate the function at default: 2527 keV]"<<std::endl;
   std::cout<<"-p (or --precision)         [precision for efficiency fit on single peaks. Default: 3 (kHigh)]"<<std::endl;
+  std::cout<<"-e (or --include-escapes)   [include 511keV, DEP and SEP for bias and resolution scaling. Default: false]"<<std::endl;
   std::cout<<"-h (or --help)              [this help]"<<std::endl;
 
 }
@@ -151,20 +152,22 @@ int main(int argc, char **argv)
   TString label="";
   double Qbb=2527;
   int precision=3;
+  bool includeEscapePeaks = false;
   {
   static struct option long_options[] = {
-					 { "input-path",        required_argument,  nullptr, 'i' },
-					 { "output-path",       required_argument,  nullptr,'o'},
-					 { "dataset",required_argument, nullptr,'d'},
-					 { "bias-function",      required_argument,nullptr,'b'  },
-					 { "reso-function",         required_argument,  nullptr,'r'},
-					 { "label",    required_argument, nullptr,'l'},
-					 { "q-value",           required_argument,  nullptr, 'q' },
-					 { "precision", required_argument, nullptr, 'p' },
-					 { "help",              no_argument,        nullptr,'h'},
+					 { "input-path",      required_argument, nullptr, 'i' },
+					 { "output-path",     required_argument, nullptr, 'o' },
+					 { "dataset",         required_argument, nullptr, 'd' },
+					 { "bias-function",   required_argument, nullptr, 'b' },
+					 { "reso-function",   required_argument, nullptr, 'r' },
+					 { "label",           required_argument, nullptr, 'l' },
+					 { "q-value",         required_argument, nullptr, 'q' },
+					 { "precision",       required_argument, nullptr, 'p' },
+					 { "include-escapes", no_argument,       nullptr, 'e' },
+					 { "help",            no_argument,       nullptr, 'h' },
 					 {nullptr, 0, nullptr, 0}
   };
-  const char* const short_options = "i:o:d:r:b:l:q:p:h";
+  const char* const short_options = "i:o:d:r:b:l:q:p:eh";
   
   int c;
   
@@ -205,6 +208,10 @@ int main(int argc, char **argv)
 	precision = atoi(optarg);
 	break;
     }
+    case 'e':{
+	includeEscapePeaks = true;
+	break;
+    }
     case'h': {
       Usage();
       return 0;
@@ -234,17 +241,24 @@ int main(int argc, char **argv)
     
     TGraphErrors * gerror_bias = new TGraphErrors();
     TGraphErrors * gerror_reso = new TGraphErrors();
-    
+
+    bool isEscapePeak;    
     for (int i=0;i<input.size();i++)
       {
-	gerror_bias->AddPoint(input[i].EnergyNom,input[i].EnergyFit-input[i].EnergyNom);
-	gerror_bias->SetPointError(gerror_bias->GetN()-1,0,input[i].ErrorEnergyFit);
-	if( fabs( input[i].EnergyNom - 511.   ) > 1. &&  // Skip annihilation and 208Tl SEP peaks from reso scaling
-	    fabs( input[i].EnergyNom - 2103.5 ) > 1. )   // because they're affected by Doppler broadening.
-	    {
-		gerror_reso->AddPoint(input[i].EnergyNom,input[i].Scaling);
-		gerror_reso->SetPointError(gerror_reso->GetN()-1,0,input[i].ErrorScaling);
-	    }
+	  if( fabs( input[i].EnergyNom - 511.   ) < 1. ||
+	      fabs( input[i].EnergyNom - 1592.5 ) < 1. ||
+	      fabs( input[i].EnergyNom - 2103.5 ) < 1. )
+	      isEscapePeak = true;
+	  else
+	      isEscapePeak = false;
+
+	  if( !includeEscapePeaks &&  isEscapePeak )// Skip 511 keV, SEP and DEP if not required
+	      continue;
+
+	  gerror_bias->AddPoint(input[i].EnergyNom,input[i].EnergyFit-input[i].EnergyNom);
+	  gerror_bias->SetPointError(gerror_bias->GetN()-1,0,input[i].ErrorEnergyFit);
+	  gerror_reso->AddPoint(input[i].EnergyNom,input[i].Scaling);
+	  gerror_reso->SetPointError(gerror_reso->GetN()-1,0,input[i].ErrorScaling);
 	
       }
     gerror_bias->SetTitle(Form("Fit to energy bias for ds %i ; Energy Nominal [keV] ; Energy Fit - Energy Nominal [keV] ;",ds));
