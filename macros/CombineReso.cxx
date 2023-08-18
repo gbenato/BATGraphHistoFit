@@ -140,9 +140,11 @@ int main(int argc, char **argv)
 	    biashisto.emplace_back( (TH1D*)biasfile->Get(histoname.c_str()) );
 	    biashisto.back()->SetName( std::string( "bias_Qbb_ds" + std::to_string(ds[d]) ).c_str() );
 	    biashisto.back()->SetTitle( std::string( "bias_Qbb_ds" + std::to_string(ds[d]) ).c_str() );
+	    biashisto.back()->Rebin(16);
 	    resohisto.emplace_back( (TH1D*)resofile->Get(histoname.c_str()) );
 	    resohisto.back()->SetName( std::string( "reso_Qbb_ds" + std::to_string(ds[d]) ).c_str() );
 	    resohisto.back()->SetTitle( std::string( "reso_Qbb_ds" + std::to_string(ds[d]) ).c_str() );
+	    resohisto.back()->Rebin(5);
 	    
 	}
 
