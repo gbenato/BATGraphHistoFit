@@ -237,13 +237,13 @@ int main(int argc, char **argv)
     
     for (int i=0;i<input.size();i++)
       {
-	gerror_bias->SetPoint(i,input[i].EnergyNom,input[i].EnergyFit-input[i].EnergyNom);
-	gerror_bias->SetPointError(i,0,input[i].ErrorEnergyFit);
+	gerror_bias->AddPoint(input[i].EnergyNom,input[i].EnergyFit-input[i].EnergyNom);
+	gerror_bias->SetPointError(gerror_bias->GetN()-1,0,input[i].ErrorEnergyFit);
 	if( fabs( input[i].EnergyNom - 511.   ) > 1. &&  // Skip annihilation and 208Tl SEP peaks from reso scaling
 	    fabs( input[i].EnergyNom - 2103.5 ) > 1. )   // because they're affected by Doppler broadening.
 	    {
-		gerror_reso->SetPoint(i,input[i].EnergyNom,input[i].Scaling);
-		gerror_reso->SetPointError(i,0,input[i].ErrorScaling);
+		gerror_reso->AddPoint(input[i].EnergyNom,input[i].Scaling);
+		gerror_reso->SetPointError(gerror_reso->GetN()-1,0,input[i].ErrorScaling);
 	    }
 	
       }
@@ -268,9 +268,16 @@ int main(int argc, char **argv)
     TF1 *fReso = new TF1("fReso",reso_function,0,4000);
     gerror_reso->Fit(fReso);
     
-    fReso->SetParLimits(0,fReso->GetParameters()[0]-12.*fReso->GetParErrors()[0],fReso->GetParameters()[0]+12.*fReso->GetParErrors()[0]);
-    fReso->SetParLimits(1,fReso->GetParameters()[1]-12.*fReso->GetParErrors()[1],fReso->GetParameters()[1]+12.*fReso->GetParErrors()[1]);
-    fReso->SetParLimits(2,fReso->GetParameters()[2]-12.*fReso->GetParErrors()[2],fReso->GetParameters()[2]+12.*fReso->GetParErrors()[2]);
+    for( int p=0; p<fReso->GetNpar(); p++ )
+	{
+	    double parMin = fReso->GetParameter(p) - 12. * fReso->GetParError(p);
+	    if( parMin < 0. ) parMin = 0.;
+	    double parMax = fReso->GetParameter(p) + 12. * fReso->GetParError(p);
+	    fReso->SetParLimits( p, parMin, parMax );
+	}
+    //fReso->SetParLimits(0,fReso->GetParameters()[0]-12.*fReso->GetParErrors()[0],fReso->GetParameters()[0]+12.*fReso->GetParErrors()[0]);
+    //fReso->SetParLimits(1,fReso->GetParameters()[1]-12.*fReso->GetParErrors()[1],fReso->GetParameters()[1]+12.*fReso->GetParErrors()[1]);
+    //fReso->SetParLimits(2,fReso->GetParameters()[2]-12.*fReso->GetParErrors()[2],fReso->GetParameters()[2]+12.*fReso->GetParErrors()[2]);
 
     // CREATE THE BAT fitter (bias)
     // -----------------------------------------------
