@@ -76,7 +76,7 @@ std::vector<LineShapeResults> ReadInputText2Map(TString path)
   // this method reads the input txt file and saves it in c++ objects
 
   std::vector<LineShapeResults> input;
-  std::fstream file;
+  std::ifstream file;
   file.open(path);
 
   while (file.is_open() &&!file.eof())
@@ -135,6 +135,7 @@ void Usage()
   std::cout<<"-l (or --label)             [label for outputs default "" ]"<<std::endl;
   std::cout<<"-q (or --q-value)           [q-value to evaluate the function at default: 2527 keV]"<<std::endl;
   std::cout<<"-p (or --precision)         [precision for efficiency fit on single peaks. Default: 3 (kHigh)]"<<std::endl;
+  std::cout<<"-e (or --include-escapes)   [include 511keV, DEP and SEP for bias and resolution scaling. Default: false]"<<std::endl;
   std::cout<<"-h (or --help)              [this help]"<<std::endl;
 
 }
@@ -151,20 +152,22 @@ int main(int argc, char **argv)
   TString label="";
   double Qbb=2527;
   int precision=3;
+  bool includeEscapePeaks = false;
   {
   static struct option long_options[] = {
-					 { "input-path",        required_argument,  nullptr, 'i' },
-					 { "output-path",       required_argument,  nullptr,'o'},
-					 { "dataset",required_argument, nullptr,'d'},
-					 { "bias-function",      required_argument,nullptr,'b'  },
-					 { "reso-function",         required_argument,  nullptr,'r'},
-					 { "label",    required_argument, nullptr,'l'},
-					 { "q-value",           required_argument,  nullptr, 'q' },
-					 { "precision", required_argument, nullptr, 'p' },
-					 { "help",              no_argument,        nullptr,'h'},
+					 { "input-path",      required_argument, nullptr, 'i' },
+					 { "output-path",     required_argument, nullptr, 'o' },
+					 { "dataset",         required_argument, nullptr, 'd' },
+					 { "bias-function",   required_argument, nullptr, 'b' },
+					 { "reso-function",   required_argument, nullptr, 'r' },
+					 { "label",           required_argument, nullptr, 'l' },
+					 { "q-value",         required_argument, nullptr, 'q' },
+					 { "precision",       required_argument, nullptr, 'p' },
+					 { "include-escapes", no_argument,       nullptr, 'e' },
+					 { "help",            no_argument,       nullptr, 'h' },
 					 {nullptr, 0, nullptr, 0}
   };
-  const char* const short_options = "i:o:d:r:b:l:q:p:h";
+  const char* const short_options = "i:o:d:r:b:l:q:p:eh";
   
   int c;
   
@@ -205,6 +208,10 @@ int main(int argc, char **argv)
 	precision = atoi(optarg);
 	break;
     }
+    case 'e':{
+	includeEscapePeaks = true;
+	break;
+    }
     case'h': {
       Usage();
       return 0;
@@ -234,13 +241,24 @@ int main(int argc, char **argv)
     
     TGraphErrors * gerror_bias = new TGraphErrors();
     TGraphErrors * gerror_reso = new TGraphErrors();
-    
+
+    bool isEscapePeak;    
     for (int i=0;i<input.size();i++)
       {
-	gerror_bias->SetPoint(i,input[i].EnergyNom,input[i].EnergyFit-input[i].EnergyNom);
-	gerror_bias->SetPointError(i,0,input[i].ErrorEnergyFit);
-	gerror_reso->SetPoint(i,input[i].EnergyNom,input[i].Scaling);
-	gerror_reso->SetPointError(i,0,input[i].ErrorScaling);
+	  if( fabs( input[i].EnergyNom - 511.   ) < 1. ||
+	      fabs( input[i].EnergyNom - 1592.5 ) < 1. ||
+	      fabs( input[i].EnergyNom - 2103.5 ) < 1. )
+	      isEscapePeak = true;
+	  else
+	      isEscapePeak = false;
+
+	  if( !includeEscapePeaks &&  isEscapePeak )// Skip 511 keV, SEP and DEP if not required
+	      continue;
+
+	  gerror_bias->AddPoint(input[i].EnergyNom,input[i].EnergyFit-input[i].EnergyNom);
+	  gerror_bias->SetPointError(gerror_bias->GetN()-1,0,input[i].ErrorEnergyFit);
+	  gerror_reso->AddPoint(input[i].EnergyNom,input[i].Scaling);
+	  gerror_reso->SetPointError(gerror_reso->GetN()-1,0,input[i].ErrorScaling);
 	
       }
     gerror_bias->SetTitle(Form("Fit to energy bias for ds %i ; Energy Nominal [keV] ; Energy Fit - Energy Nominal [keV] ;",ds));
@@ -264,9 +282,16 @@ int main(int argc, char **argv)
     TF1 *fReso = new TF1("fReso",reso_function,0,4000);
     gerror_reso->Fit(fReso);
     
-    fReso->SetParLimits(0,fReso->GetParameters()[0]-12.*fReso->GetParErrors()[0],fReso->GetParameters()[0]+12.*fReso->GetParErrors()[0]);
-    fReso->SetParLimits(1,fReso->GetParameters()[1]-12.*fReso->GetParErrors()[1],fReso->GetParameters()[1]+12.*fReso->GetParErrors()[1]);
-    fReso->SetParLimits(2,fReso->GetParameters()[2]-12.*fReso->GetParErrors()[2],fReso->GetParameters()[2]+12.*fReso->GetParErrors()[2]);
+    for( int p=0; p<fReso->GetNpar(); p++ )
+	{
+	    double parMin = fReso->GetParameter(p) - 12. * fReso->GetParError(p);
+	    if( parMin < 0. ) parMin = 0.;
+	    double parMax = fReso->GetParameter(p) + 12. * fReso->GetParError(p);
+	    fReso->SetParLimits( p, parMin, parMax );
+	}
+    //fReso->SetParLimits(0,fReso->GetParameters()[0]-12.*fReso->GetParErrors()[0],fReso->GetParameters()[0]+12.*fReso->GetParErrors()[0]);
+    //fReso->SetParLimits(1,fReso->GetParameters()[1]-12.*fReso->GetParErrors()[1],fReso->GetParameters()[1]+12.*fReso->GetParErrors()[1]);
+    //fReso->SetParLimits(2,fReso->GetParameters()[2]-12.*fReso->GetParErrors()[2],fReso->GetParameters()[2]+12.*fReso->GetParErrors()[2]);
 
     // CREATE THE BAT fitter (bias)
     // -----------------------------------------------
