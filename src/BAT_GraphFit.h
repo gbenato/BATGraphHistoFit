@@ -40,8 +40,8 @@ public:
     double fGraphMinimum,fGraphMaximum;
     TString fType;
     bool fVerbose;
-    double fMinObs=0;
-    double fMaxObs=1.5;
+    double fMinObs=0.7;
+    double fMaxObs=1.0;
     double fNObs=0;
 
     
