@@ -239,8 +239,12 @@ int main(int argc, char **argv)
       {
 	gerror_bias->SetPoint(i,input[i].EnergyNom,input[i].EnergyFit-input[i].EnergyNom);
 	gerror_bias->SetPointError(i,0,input[i].ErrorEnergyFit);
-	gerror_reso->SetPoint(i,input[i].EnergyNom,input[i].Scaling);
-	gerror_reso->SetPointError(i,0,input[i].ErrorScaling);
+	if( fabs( input[i].EnergyNom - 511.   ) > 1. &&  // Skip annihilation and 208Tl SEP peaks from reso scaling
+	    fabs( input[i].EnergyNom - 2103.5 ) > 1. )   // because they're affected by Doppler broadening.
+	    {
+		gerror_reso->SetPoint(i,input[i].EnergyNom,input[i].Scaling);
+		gerror_reso->SetPointError(i,0,input[i].ErrorScaling);
+	    }
 	
       }
     gerror_bias->SetTitle(Form("Fit to energy bias for ds %i ; Energy Nominal [keV] ; Energy Fit - Energy Nominal [keV] ;",ds));
