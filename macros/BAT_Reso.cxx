@@ -76,7 +76,7 @@ std::vector<LineShapeResults> ReadInputText2Map(TString path)
   // this method reads the input txt file and saves it in c++ objects
 
   std::vector<LineShapeResults> input;
-  std::fstream file;
+  std::ifstream file;
   file.open(path);
 
   while (file.is_open() &&!file.eof())
