@@ -303,7 +303,7 @@ int main(int argc, char **argv)
     fitter_bias->SetGraphMaxMin(20,-20);  
     fitter_bias->fModel->WriteMarkovChain(Form("%s/output_bias_%s_mcmc.root",out_path.Data(),label.Data()), "RECREATE");
 
-    fitter_bias->Fit();
+    fitter_bias->Fit("C");
     gerror_bias->SetTitle(Form("Fit to energy bias for ds %i ; Energy Nominal [keV] ; Energy Fit - Energy Nominal [keV] ;",ds));
 
 
@@ -336,7 +336,7 @@ int main(int argc, char **argv)
     fitter_reso->SetGraphMaxMin(2,0);
     fitter_reso->fModel->WriteMarkovChain(Form("%s/output_reso_%s_mcmc.root",out_path.Data(),label.Data()), "RECREATE");
 
-    fitter_reso->Fit();
+    fitter_reso->Fit("C");
     gerror_reso->SetTitle(Form("Fit to energy resolution scaling for ds %i ; Energy Nominal [keV] ; Scaling [] ;",ds));
 
     TH1D* margdistro_reso = (TH1D*)fitter_reso->fModel->GetMarginalizedHistogram(fReso->GetNpar());
