@@ -27,8 +27,10 @@ std::vector<TH1D*>GetHistogramsFrom2D( TH2D* &h,
 				       std::vector<double>energies={1173,1333,1461,2615},
 				       std::vector<double> dE_center={10,10,10,10},
 				       std::vector<double>dE_side={30,30,30,30},
+				       std::vector<double>threshold={40,40,40,40},
+				       std::vector<int>slices={5,5,5,5},
 				       std::vector<double>* single_energies=0,
-				       int precision=3)
+				       int precision=3 )
 {
     std::vector<TH1D*>out;
 
@@ -58,11 +60,11 @@ std::vector<TH1D*>GetHistogramsFrom2D( TH2D* &h,
     //can->Divide(2,1);
     for (auto & E : energies)
 	{
-	    int nSlides = 10;
-	    double delta = E / nSlides;
-	    for( int i=0; i<nSlides; i++ )
+	    int nSlices = slices[counter];
+	    double delta = ( E - 2. * threshold[counter] ) / nSlices;
+	    for( int i=0; i<nSlices; i++ )
 		{
-		    double thisE = delta * ( 0.5 + i );
+		    double thisE = threshold[counter] + delta * ( 0.5 + i );
 
 		    std::vector<std::pair<double,double>> range;
 		    range.push_back(std::make_pair(E-dE_side[counter],E-dE_center[counter]));
@@ -86,7 +88,7 @@ std::vector<TH1D*>GetHistogramsFrom2D( TH2D* &h,
 				    continue;
 
 				// Cut on energy of first event in the M2 duplet
-				if( x < delta*i || x >= delta*(i+1) )
+				if( x < threshold[counter]+delta*i || x >= threshold[counter]+delta*(i+1) )
 				    continue;
 
 				// Fill histogram of sum energy
@@ -358,6 +360,56 @@ void GetCI(TH1D *&h)
     }
 }
 
+void ReadCfg( TString path,
+	      std::vector<double>&E,
+	      std::vector<double>&center,
+	      std::vector<double>&side,
+	      std::vector<double>&threshold,
+	      std::vector<int>&slices )
+{
+    std::fstream file;
+    file.open(path);
+    std::cout<<"Reading file "<<path<<std::endl;
+    if (!file.is_open())
+	{
+	    std::cout<<"ERROR: cfg file doesnt exist"<<std::endl;
+	    throw;
+	}
+    
+    while (file.is_open() &&!file.eof())
+	{
+	    std::stringstream ss;
+	    std::string line;
+	    getline(file,line);
+	    while (getline(file, line))
+		{
+
+		    double E_tmp,Center_tmp,Side_tmp,threshold_tmp;
+		    int nslices;
+		    std::istringstream iss(line);
+
+		    iss >> E_tmp;
+		    iss >> Center_tmp;
+		    iss >> Side_tmp;
+		    iss >> threshold_tmp;
+		    iss >> nslices;
+	  
+		    E.push_back(E_tmp);
+		    center.push_back(Center_tmp);
+		    side.push_back(Side_tmp);
+		    threshold.push_back(threshold_tmp);
+		    slices.push_back(nslices);
+		    std::cout << "Add peak at energy " << E_tmp
+			      << "\nrange center " << Center_tmp
+			      << "\nside " << Side_tmp
+			      << "\nthreshold " << threshold_tmp
+			      << "\n# of slices " << nslices << std::endl;
+		}
+	}
+    return;
+}
+
+
 void ReadCfg(TString path,std::vector<double>&E,std::vector<double>&center,std::vector<double>&side,std::vector<bool>&on)
 {
   // method to read the cfg options
@@ -439,7 +491,7 @@ int main(int argc, char **argv)
   double Qbb=2527;
   TString cfg_path="cfg/EffPeaks.cfg";
   TString mode="P";
-  int precision=3;  
+  int precision=3;
   {
     static struct option long_options[] = {
                                          { "input-path",        required_argument,  nullptr, 'i' },
@@ -551,9 +603,14 @@ int main(int argc, char **argv)
   std::vector<double>energies;
   std::vector<double>dE_center;
   std::vector<double>dE_side;
+  std::vector<double>threshold;
   std::vector<bool>is_on;
-  
-  ReadCfg(cfg_path,energies,dE_center,dE_side,is_on);
+  std::vector<int>slices;
+
+  if( mode == "P2" )
+      ReadCfg(cfg_path,energies,dE_center,dE_side,threshold,slices);
+  else
+      ReadCfg(cfg_path,energies,dE_center,dE_side,is_on);
 
   
   // set the output path
@@ -574,8 +631,24 @@ int main(int argc, char **argv)
     }
   else if ( mode=="P2")
       {
-	  hpass = GetHistogramsFrom2D(hpca2d,Form("%s/out_pca_pass",out_path_ds.Data()),energies,dE_center,dE_side,single_energies,precision);
-	  hfail = GetHistogramsFrom2D(hpca2d_fail,Form("%s/out_pca_fail",out_path_ds.Data()),energies,dE_center,dE_side,single_energies,precision);
+	  hpass = GetHistogramsFrom2D( hpca2d,
+				       Form("%s/out_pca_pass",out_path_ds.Data()),
+				       energies,
+				       dE_center,
+				       dE_side,
+				       threshold,
+				       slices,
+				       single_energies,
+				       precision );
+	  hfail = GetHistogramsFrom2D( hpca2d_fail,
+				       Form("%s/out_pca_fail",out_path_ds.Data()),
+				       energies,
+				       dE_center,
+				       dE_side,
+				       threshold,
+				       slices,
+				       single_energies,
+				       precision );
       }
   else if (mode=="M")
     {
@@ -703,6 +776,7 @@ int main(int argc, char **argv)
 	  ce->Draw();
 	  ce->Print(Form("%s/eff.pdf",out_path_ds.Data()),"pdf");
       }
+  ce->cd();
   margdistro->Draw();
   ce->Draw();
   ce->Print(Form("%s/eff.pdf)",out_path_ds.Data()),"pdf");
