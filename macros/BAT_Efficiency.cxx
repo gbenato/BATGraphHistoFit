@@ -22,7 +22,133 @@
 
 // MACRO TO CALCULATE THE EFFICIENCY USING THE PEAKS IMPLEMENTED IN BAT
 // Toby Dixon: toby.dixon@universite-paris-saclay.fr 11/5/2023
+std::vector<TH1D*>GetHistogramsFrom2D( TH2D* &h,
+				       TString title,
+				       std::vector<double>energies={1173,1333,1461,2615},
+				       std::vector<double> dE_center={10,10,10,10},
+				       std::vector<double>dE_side={30,30,30,30},
+				       std::vector<double>* single_energies=0,
+				       int precision=3)
+{
+    std::vector<TH1D*>out;
 
+    TCanvas *ci= new TCanvas();
+    ci->Print(Form("%s.pdf(",title.Data()),"pdf");
+    int counter=0;
+    if (dE_side.size()!=energies.size()||dE_center.size()!=energies.size())
+	{
+	    std::cout<<"ERROR: the size of sideband not same as center energy, check the cfg file!!"<<std::endl;
+	    throw;
+	}
+
+    double minX   = h->GetXaxis()->GetXmin();
+    double maxX   = h->GetXaxis()->GetXmax();
+    double dX     = h->GetXaxis()->GetBinWidth(1);
+    int    nBinsX = h->GetNbinsX();
+    double minY   = h->GetYaxis()->GetXmin();
+    double maxY   = h->GetYaxis()->GetXmax();
+    double dY     = h->GetYaxis()->GetBinWidth(1);
+    int    nBinsY = h->GetNbinsY();
+    std::cout << "Bin widths: " << dX << "\t" << dY << std::endl;    
+    std::cout << "nBins: " << nBinsX << "\t" << nBinsY << std::endl;
+    
+    //TApplication* app = new TApplication("app",NULL,0);
+    //TCanvas* can = new TCanvas();
+    //can->cd();
+    //can->Divide(2,1);
+    for (auto & E : energies)
+	{
+	    int nSlides = 10;
+	    double delta = E / nSlides;
+	    for( int i=0; i<nSlides; i++ )
+		{
+		    double thisE = delta * ( 0.5 + i );
+
+		    std::vector<std::pair<double,double>> range;
+		    range.push_back(std::make_pair(E-dE_side[counter],E-dE_center[counter]));
+		    range.push_back(std::make_pair(E-dE_center[counter],E+dE_center[counter]));
+		    range.push_back(std::make_pair(E+dE_center[counter],E+dE_side[counter]));
+		    std::vector<double>probs{0,1,0};
+		    std::string thisHistoName = std::to_string(E)+"_"+std::to_string(i);
+		    int nBins = range[2].second - range[0].first;
+		    TH1D* thisH = new TH1D( thisHistoName.c_str(), thisHistoName.c_str(), nBins, range[0].first, range[2].second );
+
+		    for( int xx=1; xx<=nBinsX; xx++ )
+			for( int yy=1; yy<=nBinsY; yy++ )
+			    {
+				// Compute bin center
+				double x = dX * ( 0.5 + xx );
+				double y = dY * ( 0.5 + yy );
+
+				// Cut on sum energy
+				if( x+y <= range[0].first ||
+				    x+y >  range[2].second )
+				    continue;
+
+				// Cut on energy of first event in the M2 duplet
+				if( x < delta*i || x >= delta*(i+1) )
+				    continue;
+
+				// Fill histogram of sum energy
+				int bin1d = thisH->FindBin(x+y);
+				int bin2d = h->FindBin(x,y);
+				thisH->AddBinContent(bin1d,h->GetBinContent(bin2d));				    
+			    }
+		    //thisH->Draw();
+		    //app->Run(kTRUE);
+
+		    // Initial parameters for fitting function
+		    double max = thisH->GetMaximum();
+		    int bin1   = thisH->FindBin(E-dE_side[counter]);
+		    int bin2   = thisH->FindBin(E-dE_center[counter]);
+		    int bin4   = thisH->FindBin(E+dE_side[counter]);
+		    int bin3   = thisH->FindBin(E+dE_center[counter]);
+
+		    double binwidth = thisH->GetBinWidth(bin1);
+      
+		    double Bl   = thisH->Integral(bin1,bin2)/(bin2-bin1);
+		    double Br   = thisH->Integral(bin3,bin4)/(bin4-bin3);
+		    double Bmax = 3.*0.5 * (Br+Bl);
+		    if( Bmax < 10. ) Bmax = 10.;
+		    double Smax = max-(Br+Bl)/2.;
+		    if( Smax < 10. ) Smax = 10.;
+		    double Sest = 50+fabs(thisH->Integral(bin2,bin3)-dE_center[counter]*(Br+Bl));
+      
+		    double slope_est = (Br-Bl)/(dE_center[counter]+dE_side[counter]);
+		    double slope_max = (Br+2)/(dE_center[counter]+dE_side[counter]);
+
+		    // Bkg fitting function (linear)
+		    TF1 *fInt=new TF1("fInt",Form("[0]*x+[1]*pow(x-%f,2)/2.",E),E-dE_side[counter]-5,E+dE_side[counter]+5);
+		    fInt->SetParLimits(0,0,Bmax);
+		    fInt->SetParameter(0,(Br+Bl)/2.);
+		    fInt->SetParameter(1,slope_est);
+		    fInt->SetParLimits(1,-5*fabs(slope_max),+5*fabs(slope_max));
+
+		    // Create fitter
+		    std::cout<<"Sest = "<<Sest<<std::endl;
+		    BatGraphFitter *fitter_count_pass = new BatGraphFitter(thisH,fInt,range,probs,5*Sest);
+		    fitter_count_pass->SetPrecison(precision);
+
+		    // Fit
+		    fitter_count_pass->Fit();
+		    ci->Print(Form("%s.pdf",title.Data()),"pdf");
+
+		    // GET THE POSTERIOR
+		    // -------------------------------------------------------
+		    TH1D* margdistro = (TH1D*)fitter_count_pass->fModel->GetMarginalizedHistogram("S" );
+		    margdistro->SetTitle(Form("Peak at %f keV ; ; ; ",E));
+		    margdistro->Draw();
+		    ci->Draw();
+		    ci->Print(Form("%s.pdf",title.Data()),"pdf");
+		    out.push_back(margdistro);
+		    single_energies->push_back(thisE);
+		}
+	    counter ++;
+	}
+      ci->Print(Form("%s.pdf)",title.Data()),"pdf");
+    
+    return out;
+}
 
 std::vector<TH1D*>GetHistograms( TH1D* &h,
 				 TString title,
@@ -137,7 +263,6 @@ std::vector<TH1D*>GetHistograms( TH1D* &h,
 // method to combine the two probability distributions of Npass and Nfail to one on efficiency
 TH1D * toy_combine(TH1D*hpass,TH1D*hfail,double &mu,double &sigma,double E,int ds,TString mode="P")
 {
-
     std::string name = "eff_" + std::to_string((int)E);
     TH1D * hout = new TH1D(name.c_str(),name.c_str(),6000,0,1.2);
     int Ntoys = hpass->GetEntries() / 10;
@@ -149,9 +274,9 @@ TH1D * toy_combine(TH1D*hpass,TH1D*hfail,double &mu,double &sigma,double E,int d
       hout->Fill(Np/(Np+Nf));
 
     }
-  hout->GetXaxis()->SetRangeUser(0.8,1.1);
+  hout->GetXaxis()->SetRangeUser(0.5,1.1);
   hout->SetTitle(Form("DS %i - Efficiency posterior for energy %i keV ; Efficiency ; Probability ; ",ds,(int)E));
-  std::cout << "FIGA: " << hout->GetTitle() << std::endl;
+
   if( mode == "P" )
       {
 	  TF1 *fGauss= new TF1("fGauss","gaus",0,1);
@@ -160,6 +285,15 @@ TH1D * toy_combine(TH1D*hpass,TH1D*hfail,double &mu,double &sigma,double E,int d
 	  mu=fGauss->GetParameters()[1];
 	  sigma=fGauss->GetParameters()[2];
       }
+  else if( mode == "P2" )
+      {
+	  TF1 *fGauss= new TF1("fGauss","gaus",0,1);
+	  hout->Fit(fGauss,"N");
+
+	  mu=fGauss->GetParameters()[1];
+	  sigma=fGauss->GetParameters()[2];
+      }
+  hout->Draw();
   
   return hout;
 }
@@ -397,10 +531,12 @@ int main(int argc, char **argv)
   //TH1D *h = (TH1D*)f->Get(Form("h_ds%i",ds));
   //TH1D *hb = (TH1D*)f->Get(Form("hb_ds%i",ds));
   //TH1D *hm = (TH1D*)f->Get(Form("hm_ds%i",ds));
-  TH1D *hm = (TH1D*)f->Get(Form("hmbds%i",ds));//TH1D *hmb = (TH1D*)f->Get(Form("hmbds%i",ds));
-  TH1D *hpca = (TH1D*)f->Get(Form("hpca_ds%i",ds));
-  TH1D *hm_fail = (TH1D*)f->Get(Form("hmbfds%i",ds));
-  TH1D *hpca_fail = (TH1D*)f->Get(Form("hpcafds%i",ds));
+  TH1D *hm          = (TH1D*)f->Get(Form("hmbds%i",ds));//TH1D *hmb = (TH1D*)f->Get(Form("hmbds%i",ds));
+  TH1D *hpca        = (TH1D*)f->Get(Form("hpca_ds%i",ds));
+  TH1D *hm_fail     = (TH1D*)f->Get(Form("hmbfds%i",ds));
+  TH1D *hpca_fail   = (TH1D*)f->Get(Form("hpcafds%i",ds));
+  TH2D *hpca2d      = (TH2D*)f->Get(Form("hm2pca_2d_ds%i",ds));
+  TH2D *hpca2d_fail = (TH2D*)f->Get(Form("hm2pcaf_2d_ds%i",ds));
 
   hpca->SetLineColor(1);
   
@@ -430,12 +566,17 @@ int main(int argc, char **argv)
   // -------------------------------------------------
   std::vector<TH1D*>hpass;
   std::vector<TH1D*>hfail; 
-
+  std::vector<double>* single_energies = new std::vector<double>();
   if (mode=="P")
     {
 	hpass = GetHistograms(hpca,Form("%s/out_pca_pass",out_path_ds.Data()),energies,dE_center,dE_side,precision);
-      hfail = GetHistograms(hpca_fail,Form("%s/out_pca_fail",out_path_ds.Data()),energies,dE_center,dE_side,precision);
+	hfail = GetHistograms(hpca_fail,Form("%s/out_pca_fail",out_path_ds.Data()),energies,dE_center,dE_side,precision);
     }
+  else if ( mode=="P2")
+      {
+	  hpass = GetHistogramsFrom2D(hpca2d,Form("%s/out_pca_pass",out_path_ds.Data()),energies,dE_center,dE_side,single_energies,precision);
+	  hfail = GetHistogramsFrom2D(hpca2d_fail,Form("%s/out_pca_fail",out_path_ds.Data()),energies,dE_center,dE_side,single_energies,precision);
+      }
   else if (mode=="M")
     {
       // check this
@@ -456,34 +597,62 @@ int main(int argc, char **argv)
 
   TFile *peakeff_file = new TFile( Form("%s/eff.root",out_path_ds.Data()), "RECREATE");
   peakeff_file->cd();
+
+  std::vector<TH1D*>* all_hout = new std::vector<TH1D*>();
   int counter=0;
-  for (int i=0;i<hpass.size();i++)
-    {
-      double mu,sigma;
-      TH1D * hout=toy_combine(hpass[i],hfail[i],mu,sigma,energies[i],ds,mode);
+  if ( mode=="P2")
+      {
+	  for (int i=0;i<hpass.size();i++)
+	      {
+		  double mu,sigma;
+		  TH1D* hout = toy_combine(hpass[i],hfail[i],mu,sigma,single_energies->at(i),ds,mode);
+		  
+		  gerror->SetPoint(counter,single_energies->at(i),mu);
+		  gerror->SetPointError(counter,0,sigma);
+		  counter ++;
+		  
+		  ce->cd();
+		  hout->Draw();
+		  ce->Draw();
+		  ce->Print(Form("%s/eff.pdf",out_path_ds.Data()),"pdf");
+		  hout->Write();
+		  all_hout->push_back( (TH1D*)hout->Clone() );
+		  all_hout->back()->SetDirectory(gROOT);// We need this to keep all_hout in memory after we close this fucking ROOT file!
 
-      if (is_on[i]==true)
-	{
-	  gerror->SetPoint(counter,energies[i],mu);
-	  gerror->SetPointError(counter,0,sigma);
-	  counter++;
-	}
-      ce->cd();
-      hout->Draw();
-      ce->Draw();
-      ce->Print(Form("%s/eff.pdf",out_path_ds.Data()),"pdf");
-      hout->Write();
-    }
-  
-  peakeff_file->Close();
+	      }
+      }
+  else
+      {
 
+	  for (int i=0;i<hpass.size();i++)
+	      {
+		  double mu,sigma;
+		  TH1D * hout=toy_combine(hpass[i],hfail[i],mu,sigma,energies[i],ds,mode);
+		  
+		  if (is_on[i]==true)
+		      {
+			  gerror->SetPoint(counter,energies[i],mu);
+			  gerror->SetPointError(counter,0,sigma);
+			  counter++;
+		      }
+		  ce->cd();
+		  hout->Draw();
+		  ce->Draw();
+		  ce->Print(Form("%s/eff.pdf",out_path_ds.Data()),"pdf");
+		  hout->Write();
+	      }
+      }
+    
   if( mode == "M" )
       {
 	  ce->SaveAs(Form("%s/eff.pdf)",out_path_ds.Data()),"pdf");
 	  return 0;
       }
-  gerror->SetTitle(Form("PCA efficiency for ds %i ; Energy [keV] ; Efficiency ",ds));
-  gerror->SaveAs(Form("%s/graph.root",out_path_ds.Data()));
+  else if( mode == "P" )
+      {
+	  gerror->SetTitle(Form("PCA efficiency for ds %i ; Energy [keV] ; Efficiency ",ds));
+	  gerror->SaveAs(Form("%s/graph.root",out_path_ds.Data()));
+      }
 
 
   // CREATE A FUNCTION TO FIT THE EFFICIENCY
@@ -498,8 +667,12 @@ int main(int argc, char **argv)
   // CREATE THE BAT fitter
   // -----------------------------------------------
   
-  BatGraphFitter *fitter = new BatGraphFitter(gerror,fEff);
-  fitter->SetPrecison(4);
+  BatGraphFitter *fitter;
+  if ( mode=="P2")
+      fitter = new BatGraphFitter( all_hout,fEff,*single_energies);
+  else
+      fitter = new BatGraphFitter(gerror,fEff);
+  fitter->SetPrecison(precision);
   fitter->SetQbb(Qbb);
   fitter->SetGraphMaxMin(1,0);
 
@@ -517,9 +690,19 @@ int main(int argc, char **argv)
   
   // SAVE THE OUTPUT
   // ------------------------------------------------------------
-  
-  ce->Draw();
-  ce->Print(Form("%s/eff.pdf",out_path_ds.Data()),"pdf");
+
+  if( mode == "P" )
+      {
+	  ce->Draw();
+	  ce->Print(Form("%s/eff.pdf",out_path_ds.Data()),"pdf");
+      }
+  else if( mode == "P2" )
+      {
+	  gerror->Draw("AP");
+	  fitter->GetFittingFunction()->Draw("same");
+	  ce->Draw();
+	  ce->Print(Form("%s/eff.pdf",out_path_ds.Data()),"pdf");
+      }
   margdistro->Draw();
   ce->Draw();
   ce->Print(Form("%s/eff.pdf)",out_path_ds.Data()),"pdf");

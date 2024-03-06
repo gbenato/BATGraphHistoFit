@@ -31,6 +31,8 @@ public:
     TF1 *fTF1=nullptr;
     TF1 *fTF1_int=nullptr;
     TGraphAsymmErrors *fGraph=nullptr;
+    std::vector<double>* fX;
+    std::vector<TH1D*>* fHistoVector=nullptr;
     TGraph *fGraphBinomTrial;
     TGraph *fGraphBinomSuccess;
     TH1D *fTH1=nullptr;
@@ -54,6 +56,7 @@ public:
     void CalculateObservables(const std::vector<double>&pars);
     void SetObsRange(double mi,double ma){fMinObs=mi; fMaxObs=ma;};
     void SetGraph(TGraphAsymmErrors *&g,double max=pow(10,5),double min=-pow(10,5));
+    void SetHistoVector(std::vector<double>*x, std::vector<TH1D*>*&h,double min=-pow(10,5),double max=pow(10,5));
     void SetHisto(TH1D*&h,TString type="P");
     void SetEnergyVector(std::vector<double>vec);
 
