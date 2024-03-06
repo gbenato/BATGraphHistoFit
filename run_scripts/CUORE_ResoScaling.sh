@@ -9,11 +9,12 @@
 #done
 
 
-for((ds=3817; ds<=3818; ds++))
+#for((ds=3817; ds<=3818; ds++))
+for((ds=3817; ds<=3817; ds++))
 do
-    /home/gbenato/Cuore/Analysis/BATGraphHistoFit/bin/BAT_Reso \
-	--input-path /home/gbenato/Cuore/Data/TAUP23/lineshape/background/lineshape_fit_results/bkg/plots/fitresults/fitresults \
-	--output-path  /home/gbenato/Cuore/Data/TAUP23/lineshape_scaling_output \
+    /cuore/soft/bat_soft/BATGraphHistoFit/bin/BAT_Reso \
+	--input-path /nfs/cuore4/data/userdata/TAUP23/lineshape/background/lineshape_fit_results/bkg/plots/fitresults/fitresults \
+	--output-path  /nfs/cuore4/data/userdata/TAUP23/lineshape_scaling_output \
 	--label linearreso \
 	--dataset $ds \
 	--precision 3
