@@ -143,7 +143,6 @@ int main(int argc, char **argv)
 	    biashisto.back()->Rebin(8);
 	    double integral = biashisto.back()->Integral( 1, biashisto.back()->GetNbinsX() );
 	    biashisto.back()->Scale(1./integral);
-	    
 	    resohisto.emplace_back( (TH1D*)resofile->Get(histoname.c_str()) );
 	    resohisto.back()->Rebin(3);
 	    resohisto.back()->SetName( std::string( "reso_Qbb_ds" + std::to_string(ds[d]) ).c_str() );
