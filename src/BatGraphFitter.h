@@ -24,7 +24,9 @@ public:
     BatGraphFitter(TGraphErrors*&g,TF1 *&f); // graph fit with symmetric errors
     BatGraphFitter(TGraph *g,TGraph *&gTrial,TGraph *&gSuccess,TF1 *&f); //binomial fit
     BatGraphFitter(TH1D *&h,TF1 *&f,std::vector<std::pair<double,double>> ranges,std::vector<double>probs,double Sm=100); // counting analysis
-    BatGraphFitter(TH1D*&h,TF1*&f,TF1*&f_int,std::vector<double>energy);
+    BatGraphFitter(std::vector<TH1D*>*h,TF1*&f,std::vector<double>energy);
+    BatGraphFitter(TH1D*&h,TF1*&f,TF1 *&f_int,std::vector<double>energy);
+	
     ~BatGraphFitter();
     
     void SetTH1(TH1D*&h){fHisto=h;};
@@ -43,7 +45,7 @@ public:
     void SetGraphMaxMin(double max,double min){fMax=max; fMin=min;};
     void ResetTF1(TF1*&f);
     void ResetTF1Int(TF1*&fi);
-
+    TF1* GetFittingFunction(){return fTF1;};
     int fPrec;
 
     TGraphAsymmErrors *fGrint;
@@ -52,6 +54,7 @@ public:
     void SetQbb(double Q){fQbb=Q;};
     BAT_GraphFit *fModel=nullptr;
     TGraphAsymmErrors *fGraph=nullptr;
+    std::vector<TH1D*> *fHistoVector;
     double fSmax;
     TF1  *fTF1=nullptr;
     TF1  *fTF1Int=nullptr;

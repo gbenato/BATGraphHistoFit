@@ -23,6 +23,27 @@ BatGraphFitter::BatGraphFitter(TGraphAsymmErrors *&g,TF1 *&f)
     fMin=-pow(10,9);
     fMax=pow(10,9);
 }
+BatGraphFitter::BatGraphFitter(std::vector<TH1D*>*h,TF1*&f,std::vector<double>energy)
+{
+
+    
+    fMode = "GH";
+    fTF1 = f;
+    fModel= new BAT_GraphFit("fit",f,1,fMode,fQbb);
+
+    fHistoVector = h;
+    for( int i=0; i<fHistoVector->size(); i++ )
+	{
+	    int nBins = fHistoVector->at(i)->GetNbinsX();
+	    double integral = fHistoVector->at(i)->Integral(1,nBins);
+	    double binWidth = fHistoVector->at(i)->GetBinWidth(1);
+	    fHistoVector->at(i)->Scale(1./integral/binWidth);
+	}
+
+    fEnergyVector = energy;
+    fMin=-pow(10,9);
+    fMax=pow(10,9);
+}
 
 BatGraphFitter::BatGraphFitter(TH1D*&h,TF1*&f)
 {
@@ -196,6 +217,10 @@ void BatGraphFitter::Fit( TString option,
     if (fMode=="G")
 	{
 	    fModel->SetGraph(fGraph,fMax,fMin);
+	}
+    else if( fMode=="GH")
+	{
+	    fModel->SetHistoVector(&fEnergyVector,fHistoVector,fMin,fMax);
 	}
     else if(fMode=="P"||fMode=="U")
 	{

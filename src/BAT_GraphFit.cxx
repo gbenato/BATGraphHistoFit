@@ -211,6 +211,19 @@ void BAT_GraphFit::SetGraph(TGraphAsymmErrors *&g,double max,double min)
     GetObservables().SetNBins(1000.*(fMaxObs-fMinObs));
   
 }
+
+void BAT_GraphFit::SetHistoVector(std::vector<double>*x,
+				  std::vector<TH1D*>*&h,
+				  double min,
+				  double max)
+{
+    fX = x;
+    fHistoVector = h;
+    fGraphMaximum=max;
+    fGraphMinimum=min;
+    AddObservable("fQ",fMinObs,fMaxObs,"f(Q_{#beta#beta})","[]");
+    GetObservables().SetNBins(1000.*(fMaxObs-fMinObs));
+}
 void BAT_GraphFit::SetHisto(TH1D*&h,TString type)
 {
     fType=type;
@@ -274,7 +287,10 @@ void BAT_GraphFit::SetCountingPars(  std::vector<std::pair<double,double>>range,
 	    std::cout << "LateralDE: " << lateralDE << std::endl;
 	    double s = fCountingN[1] - ( fCountingN[0] + fCountingN[2] ) * rangeratio;
 	    std::cout << "s: " << s << std::endl;
+	    if( s == 0. ) s=2.4;
 	    double sigma_s = sqrt( fCountingN[1] + ( fCountingN[0] + fCountingN[2] ) * rangeratio );
+	    if( sigma_s == 0. )
+		sigma_s = 2.4;
 	    double min_s = s - 7. * sigma_s;
 	    if( min_s < 0. ) min_s = 0.;
 	    double max_s = s + 7. * sigma_s;
@@ -315,7 +331,7 @@ void BAT_GraphFit::SetBinomGraph(TGraph *&gTrial,TGraph *&gSuccess)
 
 void BAT_GraphFit::CalculateObservables(const std::vector<double>&pars)
 {
-    if (fMode=="G")
+    if (fMode=="G" || fMode=="GH" )
 	{
 	    for (int n=0;n<fNpar;n++)
 		{
@@ -391,7 +407,18 @@ double BAT_GraphFit::LogLikelihood(const std::vector<double>& pars)
 			}
 		}
 	}
-
+    else if( fMode == "GH" )
+	{
+	    for( int i=0; i<fHistoVector->size(); i++ )
+		{
+		    double x = fX->at(i);
+		    double y = fTF1->Eval(x);
+		    if( y>fGraphMinimum && y<fGraphMaximum )
+			logL += log( fHistoVector->at(i)->GetBinContent( fHistoVector->at(i)->FindBin(y) ) );
+		    else
+			logL -= pow(10.,9.);
+		}
+	}
     //  ************ POISSON  *************************
     /// ***********************************************
     else if (fMode=="P")
