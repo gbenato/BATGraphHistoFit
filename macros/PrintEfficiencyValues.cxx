@@ -87,7 +87,8 @@ int main(int argc, char **argv)
 		}
 	}
 
-    std::string filename = inputdir + "ds" + std::to_string(ds) + "/eff.root";
+    //std::string filename = inputdir + "ds" + std::to_string(ds) + "/eff.root";
+    std::string filename = inputdir + "ds" + std::to_string(ds) + "/output_eff.root";
     std::ifstream testfile(filename.c_str());
     if( !testfile.good() )
 	{
