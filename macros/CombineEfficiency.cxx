@@ -117,6 +117,7 @@ void ComputeShortestInterval( int ds, TH1D* h)
     double errShortLeft  = binWidth * ( modeBin - binLeft );
     double errShortRight = binWidth * ( binRight - modeBin );
 
+    std::cout << "DS: " << ds << std::endl;
     std::cout << "Mode:  " << std::setprecision(10) << mode << std::endl;
     std::cout << "Low error for shortest interval method:  " << std::setprecision(10) << errShortLeft << std::endl;
     std::cout << "High error for shortest interval method: " << std::setprecision(10) << errShortRight << std::endl;
