@@ -1,0 +1,7 @@
+/home/gbenato/Cuore/Analysis/BATGraphHistoFit/bin/BAT_Efficiency \
+    --input-path /home/gbenato/Cuore/Data/TAUP23/EfficiencyInput/Eff_ \
+    --output-path /home/gbenato/Cuore/Data/TAUP23/PCAEfficiency \
+    --cfg-path /home/gbenato/Cuore/Analysis/BATGraphHistoFit/cfg/EffPeaks.cfg \
+    --dataset 3816 \
+    --precision 3 \
+    --mode P &
